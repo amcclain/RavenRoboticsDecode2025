@@ -6,17 +6,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name="One Motor One Servo", group="Test OpModes")
-public class OneMotorOneServoTestMode extends LinearOpMode {
+@TeleOp(name="Ball Shooter Test", group="Test OpModes")
+public class BallShooterTest extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
-    private DcMotor motorTest;
-    private Servo servoTest;
+    private DcMotor motor0;
+    private DcMotor motor1;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        motorTest = hardwareMap.get(DcMotor.class, "motorTest");
-        servoTest = hardwareMap.get(Servo.class, "servoTest");
+        motor0 = hardwareMap.get(DcMotor.class, "motor0");
+        motor1 = hardwareMap.get(DcMotor.class, "motor1");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -36,19 +36,17 @@ public class OneMotorOneServoTestMode extends LinearOpMode {
             double right_stick_y = gamepad1.right_stick_y;
             telemetry.addData("Joystick", "lX (%.2f), lY (%.2f), rX (%.2f), rY (%.2f)", left_stick_x, left_stick_y, right_stick_x, right_stick_y);
 
-            motorTest.setPower(left_stick_y);
+
 
             // Read if button A is pressed - if so, turn motor on at half power, else turn it off
-            boolean aPressed = gamepad1.a;
-            telemetry.addData("Button A", aPressed);
-
-            // Read if button B is pressed - if so, set servo to position 1, else set it to position 0
-            boolean bPressed = gamepad1.b;
-            telemetry.addData("Button B", bPressed);
-            if (bPressed) {
-                servoTest.setPosition(1.0);
+            boolean XPressed = gamepad1.a;
+            telemetry.addData("Button X", XPressed);
+            if (XPressed){
+                motor0.setPower(1);
+                motor1.setPower(1);
             } else {
-                servoTest.setPosition(0.0);
+                motor0.setPower(0.0);
+                motor1.setPower(0.0);
             }
 
             telemetry.update();
