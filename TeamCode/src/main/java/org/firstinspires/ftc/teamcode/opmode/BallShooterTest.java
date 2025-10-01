@@ -43,7 +43,7 @@ public class BallShooterTest extends LinearOpMode {
             telemetry.addData("Button X", XPressed);
             if (XPressed){
                 motor0.setPower(1);
-                motor1.setPower(1);
+                motor1.setPower(-1);
             } else {
                 motor0.setPower(0.0);
                 motor1.setPower(0.0);
