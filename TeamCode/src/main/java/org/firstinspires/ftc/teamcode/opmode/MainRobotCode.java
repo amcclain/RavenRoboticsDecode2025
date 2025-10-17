@@ -45,9 +45,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
-    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
-    CRServo intake;
-    Servo LeftServo, RightServo, LiftSevro;
+    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, Rshooter ,Lshooter;
+    CRServo belt, intake;
+    Servo LiftSevro;
+    Servo LeftTilter, RightTilter;
 
 
 
@@ -61,16 +62,19 @@ public class MainRobotCode extends OpMode {
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
         backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
         backRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
+        Rshooter = hardwareMap.get(DcMotor.class, "Right_shooter_motor");
+        Lshooter = hardwareMap.get(DcMotor.class, "Left_shooter_motor");
         intake = hardwareMap.get(CRServo.class, "intake");
-        LeftServo = hardwareMap.get(Servo.class, "LeftServo");
-        RightServo = hardwareMap.get(Servo.class, "RightServo");
+        belt = hardwareMap.get(CRServo.class, "belt");
+        LeftTilter = hardwareMap.get(Servo.class, "LeftTilter");
+        RightTilter = hardwareMap.get(Servo.class, "RightTilter");
         LiftSevro = hardwareMap.get(Servo.class, "LiftServo");
 
         //flips the direction of the necessary motors and servos
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        RightServo.setDirection(Servo.Direction.REVERSE);
+        RightTilter.setDirection(Servo.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -88,7 +92,9 @@ public class MainRobotCode extends OpMode {
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
-
+    double tilt = 0;
+    boolean realitiveDrive = true;
+    boolean pressed = false;
     @Override
     public void loop() {
         //add telemetry
@@ -98,30 +104,52 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("The right joystick turns the robot");
 
 
-        //Triangle button resets robot Yaw
-        if (gamepad1.y) {
+        //reset robot Yaw
+        if (gamepad1.dpad_down) {
             imu.resetYaw();
         }
 
-        //X button activates intake
+        //activate intake
         if (gamepad1.a) {
-            intake.setPower(-1);
+            intake.setPower(1);
+            belt.setPower(1);
         } else {
             intake.setPower(0);
+            belt.setPower(0);
         }
+
 
         //Tilt Shooter
         if (gamepad1.x){
-            RightServo.setPosition(1);
-            LeftServo.setPosition(1);
+            //tilt += 0.1;
+        }
+        if (gamepad1.b){
+            LiftSevro.setPosition(0.1);
         } else {
-            RightServo.setPosition(0);
-            LeftServo.setPosition(0);
+            LiftSevro.setPosition(0);
+        }
+        RightTilter.setPosition(tilt); LeftTilter.setPosition(tilt);
+
+        //spin up shooter
+        if (gamepad1.y) {
+            Rshooter.setPower(1);
+            Lshooter.setPower(-1);
+        } else {
+            Rshooter.setPower(0);
+            Lshooter.setPower(0);
+        }
+
+        //L1 button switches to traditional drive
+
+        if (gamepad1.left_bumper && !pressed){
+            realitiveDrive = !realitiveDrive;
+            pressed = true;
+        } else {
+            pressed = false;
         }
 
 
-        //L1 button switches to traditional drive
-        if (gamepad1.left_bumper) {
+        if (realitiveDrive) {
             drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
         } else {
             driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
