@@ -74,6 +74,7 @@ public class MainRobotCode extends OpMode {
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        Lshooter.setDirection(DcMotor.Direction.REVERSE);
         RightTilter.setDirection(Servo.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
@@ -81,6 +82,8 @@ public class MainRobotCode extends OpMode {
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Rshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Lshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //setting up the IMU
         imu = hardwareMap.get(IMU.class, "imu");
@@ -92,9 +95,10 @@ public class MainRobotCode extends OpMode {
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
-    double tilt = 0;
+    double tilt = 0.2;
+    double power = 0.75;
     boolean realitiveDrive = true, conveyor;
-    boolean pressed = false, pressed1 = false, Epressed = false, Estopped = false;
+    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, Epressed = false, Estopped = false;
 
     @Override
     public void loop() {
@@ -104,6 +108,7 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("The left joystick moves robot");
         telemetry.addLine("The right joystick turns the robot");
         telemetry.addLine("Is Estopped: " + Estopped);
+        telemetry.addLine("Servo Pos: " + LeftTilter.getPosition());
 
 
         //Estop
@@ -131,6 +136,25 @@ public class MainRobotCode extends OpMode {
             pressed1 = false;
         }
 
+
+        //bumpers
+        if (gamepad1.left_bumper){
+            if (!pressed2){
+                power += 0.2;
+            }
+            pressed2 = true;
+        } else {
+            pressed2 = false;
+        }
+        if (gamepad1.right_bumper){
+            if (!pressed3){
+                power -= 0.2;
+            }
+            pressed3 = true;
+        } else {
+            pressed3 = false;
+        }
+
         //activate intake and belt
         if (conveyor && !Estopped) {
             intake.setPower(1);
@@ -152,20 +176,19 @@ public class MainRobotCode extends OpMode {
             LiftSevro.setPosition(0);
         }
 
-        RightTilter.setPosition(0);
-        LeftTilter.setPosition(0);
+        RightTilter.setPosition(tilt); LeftTilter.setPosition(tilt);
 
         //spin up shooter
         if (gamepad1.y && !Estopped) {
-            Rshooter.setPower(1);
-            Lshooter.setPower(-1);
+            Rshooter.setPower(-power);
+            Lshooter.setPower(-power);
         } else {
             Rshooter.setPower(0);
             Lshooter.setPower(0);
         }
 
         //L1 button switches drives
-        if (gamepad1.left_bumper){
+        if (gamepad1.dpad_up){
             if (pressed) {
                 realitiveDrive = !realitiveDrive;
             }
