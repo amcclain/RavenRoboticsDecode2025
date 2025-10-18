@@ -93,8 +93,9 @@ public class MainRobotCode extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
     double tilt = 0;
-    boolean realitiveDrive = true;
-    boolean pressed = false;
+    boolean realitiveDrive = true, conveyor;
+    boolean pressed = false, pressed1 = false, Epressed = false, Estopped = false;
+
     @Override
     public void loop() {
         //add telemetry
@@ -102,15 +103,36 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick moves robot");
         telemetry.addLine("The right joystick turns the robot");
+        telemetry.addLine("Is Estopped: " + Estopped);
 
+
+        //Estop
+        if (gamepad1.touchpadWasPressed()){
+            if (!Epressed) {
+                Estopped = !Estopped;
+                belt.setPower(0);
+            }
+            Epressed = true;
+        } else {
+            Epressed = false;
+        }
 
         //reset robot Yaw
         if (gamepad1.dpad_down) {
             imu.resetYaw();
         }
 
-        //activate intake
-        if (gamepad1.a) {
+        if (gamepad1.a){
+            if (!pressed1){
+                conveyor = !conveyor;
+            }
+            pressed1 = true;
+        } else {
+            pressed1 = false;
+        }
+
+        //activate intake and belt
+        if (conveyor && !Estopped) {
             intake.setPower(1);
             belt.setPower(1);
         } else {
@@ -118,20 +140,23 @@ public class MainRobotCode extends OpMode {
             belt.setPower(0);
         }
 
-
         //Tilt Shooter
-        if (gamepad1.x){
+        if (gamepad1.x && !Estopped){
             //tilt += 0.1;
         }
-        if (gamepad1.b){
-            LiftSevro.setPosition(0.1);
+
+        //Lift servo
+        if (gamepad1.b && !Estopped){
+            LiftSevro.setPosition(0.2);
         } else {
             LiftSevro.setPosition(0);
         }
-        RightTilter.setPosition(tilt); LeftTilter.setPosition(tilt);
+
+        RightTilter.setPosition(0);
+        LeftTilter.setPosition(0);
 
         //spin up shooter
-        if (gamepad1.y) {
+        if (gamepad1.y && !Estopped) {
             Rshooter.setPower(1);
             Lshooter.setPower(-1);
         } else {
@@ -139,20 +164,23 @@ public class MainRobotCode extends OpMode {
             Lshooter.setPower(0);
         }
 
-        //L1 button switches to traditional drive
-
-        if (gamepad1.left_bumper && !pressed){
-            realitiveDrive = !realitiveDrive;
+        //L1 button switches drives
+        if (gamepad1.left_bumper){
+            if (pressed) {
+                realitiveDrive = !realitiveDrive;
+            }
             pressed = true;
         } else {
             pressed = false;
         }
 
-
-        if (realitiveDrive) {
-            drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        //Executes driving
+        if (realitiveDrive && !Estopped) {
+            drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        } else if (!Estopped) {
+            driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
         } else {
-            driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            driveFieldRelative(0, 0, 0);
         }
 
 
