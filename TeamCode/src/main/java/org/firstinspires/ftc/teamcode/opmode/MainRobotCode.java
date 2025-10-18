@@ -96,7 +96,7 @@ public class MainRobotCode extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
     double tilt = 0.2;
-    double power = 0.60;
+    double power = 50;
     int direction = 1;
     boolean realitiveDrive = true, conveyor;
     boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, pressed4 = false, Epressed = false, Estopped = false;
@@ -110,7 +110,8 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("The right joystick turns the robot");
         telemetry.addLine("Is Estopped: " + Estopped);
         telemetry.addLine("Servo Pos: " + LeftTilter.getPosition());
-        telemetry.addLine("Shooter power: " + power*100 + "%");
+        telemetry.addLine("Shooter power: " + power + "%");
+        telemetry.addLine("Intake power: " + direction);
 
 
         //Estop
@@ -151,7 +152,8 @@ public class MainRobotCode extends OpMode {
         //bumpers
         if (gamepad1.left_bumper){
             if (!pressed2){
-                power += 0.2;
+                power += 5;
+                Math.round(power);
             }
             pressed2 = true;
         } else {
@@ -159,7 +161,8 @@ public class MainRobotCode extends OpMode {
         }
         if (gamepad1.right_bumper){
             if (!pressed3){
-                power -= 0.2;
+                power -= 5;
+                Math.round(power);
             }
             pressed3 = true;
         } else {
@@ -191,8 +194,8 @@ public class MainRobotCode extends OpMode {
 
         //spin up shooter
         if (gamepad1.y && !Estopped) {
-            Rshooter.setPower(-power);
-            Lshooter.setPower(-power);
+            Rshooter.setPower(-power/100);
+            Lshooter.setPower(-power/100);
         } else {
             Rshooter.setPower(0);
             Lshooter.setPower(0);
