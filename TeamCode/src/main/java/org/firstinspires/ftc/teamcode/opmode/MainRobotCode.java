@@ -96,7 +96,7 @@ public class MainRobotCode extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
     double tilt = 0.2;
-    double power = 0.75;
+    double power = 0.60;
     boolean realitiveDrive = true, conveyor;
     boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, Epressed = false, Estopped = false;
 
