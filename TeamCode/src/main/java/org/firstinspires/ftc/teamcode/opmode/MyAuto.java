@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmode;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -11,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@Autonomous(name = "Main Robot Code", group = "Robot")
+@Autonomous(name = "Main Auto Code", group = "Robot")
 public class MyAuto extends OpMode {
 
     //declares the motors and servos
@@ -66,8 +65,8 @@ public class MyAuto extends OpMode {
 
     @Override
     public void loop() {
-        if (timer < 750){
-            drive(0.1, 0, 0);
+        if (timer < 300){
+            drive(-0.25, 0, 0);
             timer += 1;
         }
     }
