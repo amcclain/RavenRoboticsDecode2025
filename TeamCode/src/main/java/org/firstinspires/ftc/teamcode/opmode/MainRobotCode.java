@@ -97,8 +97,9 @@ public class MainRobotCode extends OpMode {
     }
     double tilt = 0.2;
     double power = 0.60;
+    int direction = 1;
     boolean realitiveDrive = true, conveyor;
-    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, Epressed = false, Estopped = false;
+    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, pressed4 = false, Epressed = false, Estopped = false;
 
     @Override
     public void loop() {
@@ -109,6 +110,7 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("The right joystick turns the robot");
         telemetry.addLine("Is Estopped: " + Estopped);
         telemetry.addLine("Servo Pos: " + LeftTilter.getPosition());
+        telemetry.addLine("Shooter power: " + power*100 + "%");
 
 
         //Estop
@@ -136,6 +138,15 @@ public class MainRobotCode extends OpMode {
             pressed1 = false;
         }
 
+        if (gamepad1.right_trigger > 0){
+            if (!pressed4){
+                direction = -direction;
+            }
+            pressed4 = true;
+        } else {
+            pressed4 = false;
+        }
+
 
         //bumpers
         if (gamepad1.left_bumper){
@@ -157,8 +168,8 @@ public class MainRobotCode extends OpMode {
 
         //activate intake and belt
         if (conveyor && !Estopped) {
-            intake.setPower(1);
-            belt.setPower(1);
+            intake.setPower(direction);
+            belt.setPower(direction);
         } else {
             intake.setPower(0);
             belt.setPower(0);
