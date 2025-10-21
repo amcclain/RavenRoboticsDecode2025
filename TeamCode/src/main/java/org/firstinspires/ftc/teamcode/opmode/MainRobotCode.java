@@ -48,7 +48,6 @@ public class MainRobotCode extends OpMode {
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, Rshooter ,Lshooter;
     CRServo belt, intake;
     Servo LiftSevro;
-    Servo LeftTilter, RightTilter;
 
 
 
@@ -66,8 +65,6 @@ public class MainRobotCode extends OpMode {
         Lshooter = hardwareMap.get(DcMotor.class, "Left_shooter_motor");
         intake = hardwareMap.get(CRServo.class, "intake");
         belt = hardwareMap.get(CRServo.class, "belt");
-        LeftTilter = hardwareMap.get(Servo.class, "LeftTilter");
-        RightTilter = hardwareMap.get(Servo.class, "RightTilter");
         LiftSevro = hardwareMap.get(Servo.class, "LiftServo");
 
         //flips the direction of the necessary motors and servos
@@ -75,7 +72,6 @@ public class MainRobotCode extends OpMode {
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         Lshooter.setDirection(DcMotor.Direction.REVERSE);
-        RightTilter.setDirection(Servo.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -95,7 +91,6 @@ public class MainRobotCode extends OpMode {
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
-    double tilt = 0.2;
     double power = 50;
     int direction = 1;
     boolean realitiveDrive = true, conveyor;
@@ -104,12 +99,11 @@ public class MainRobotCode extends OpMode {
     @Override
     public void loop() {
         //add telemetry
-        telemetry.addLine("Press Triangle to reset Yaw");
+        telemetry.addLine("Press Down D-Pad to reset Yaw");
         telemetry.addLine("Hold left bumper to drive in robot relative");
         telemetry.addLine("The left joystick moves robot");
         telemetry.addLine("The right joystick turns the robot");
         telemetry.addLine("Is Estopped: " + Estopped);
-        telemetry.addLine("Servo Pos: " + LeftTilter.getPosition());
         telemetry.addLine("Shooter power: " + power + "%");
         telemetry.addLine("Intake power: " + direction);
 
@@ -152,7 +146,7 @@ public class MainRobotCode extends OpMode {
         //bumpers
         if (gamepad1.left_bumper){
             if (!pressed2){
-                power += 5;
+                power -= 5;
                 Math.round(power);
             }
             pressed2 = true;
@@ -161,7 +155,7 @@ public class MainRobotCode extends OpMode {
         }
         if (gamepad1.right_bumper){
             if (!pressed3){
-                power -= 5;
+                power += 5;
                 Math.round(power);
             }
             pressed3 = true;
@@ -179,9 +173,6 @@ public class MainRobotCode extends OpMode {
         }
 
         //Tilt Shooter
-        if (gamepad1.x && !Estopped){
-            //tilt += 0.1;
-        }
 
         //Lift servo
         if (gamepad1.b && !Estopped){
@@ -189,8 +180,6 @@ public class MainRobotCode extends OpMode {
         } else {
             LiftSevro.setPosition(0);
         }
-
-        RightTilter.setPosition(tilt); LeftTilter.setPosition(tilt);
 
         //spin up shooter
         if (gamepad1.y && !Estopped) {
