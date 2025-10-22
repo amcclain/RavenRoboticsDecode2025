@@ -35,8 +35,6 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.configuration.annotations.ServoType;
-import com.qualcomm.robotcore.hardware.configuration.annotations.ServoTypes;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -47,7 +45,7 @@ public class MainRobotCode extends OpMode {
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, Rshooter ,Lshooter;
     CRServo belt, intake;
-    Servo LiftSevro;
+    Servo BallLift;
 
 
 
@@ -57,15 +55,15 @@ public class MainRobotCode extends OpMode {
 
     @Override
     public void init() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_motor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
-        Rshooter = hardwareMap.get(DcMotor.class, "Right_shooter_motor");
-        Lshooter = hardwareMap.get(DcMotor.class, "Left_shooter_motor");
-        intake = hardwareMap.get(CRServo.class, "intake");
-        belt = hardwareMap.get(CRServo.class, "belt");
-        LiftSevro = hardwareMap.get(Servo.class, "LiftServo");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
+        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        Rshooter = hardwareMap.get(DcMotor.class, "RightShooterMotor");
+        Lshooter = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+        intake = hardwareMap.get(CRServo.class, "Intake");
+        belt = hardwareMap.get(CRServo.class, "Belt");
+        BallLift = hardwareMap.get(Servo.class, "BallLift");
 
         //flips the direction of the necessary motors and servos
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -93,8 +91,9 @@ public class MainRobotCode extends OpMode {
     }
     double power = 50;
     int direction = 1;
+    boolean shooting = false;
     boolean realitiveDrive = true, conveyor;
-    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, pressed4 = false, Epressed = false, Estopped = false;
+    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, pressed4 = false, pressed5 = false, Epressed = false, Estopped = false;
 
     @Override
     public void loop() {
@@ -176,19 +175,29 @@ public class MainRobotCode extends OpMode {
 
         //Lift servo
         if (gamepad1.b && !Estopped){
-            LiftSevro.setPosition(0.2);
+            BallLift.setPosition(0.3);
         } else {
-            LiftSevro.setPosition(0);
+            BallLift.setPosition(0);
         }
 
         //spin up shooter
-        if (gamepad1.y && !Estopped) {
+        if (gamepad1.y && !Estopped){
+            if (!pressed5){
+                shooting = !shooting;
+            }
+            pressed5 = true;
+        } else {
+            pressed5 = false;
+        }
+
+        if (shooting){
             Rshooter.setPower(-power/100);
             Lshooter.setPower(-power/100);
         } else {
             Rshooter.setPower(0);
             Lshooter.setPower(0);
         }
+
 
         //L1 button switches drives
         if (gamepad1.dpad_up){
