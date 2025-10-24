@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmode.AutoMode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "Main Auto Code", group = "robot")
-public class MainAutoCode extends LinearOpMode{
+@Autonomous(name = "Red Team Far", group = "robot")
+public class Red_Team_Far extends LinearOpMode{
 
     //declare DriveBase motors
     DcMotor FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive;
@@ -22,9 +22,9 @@ public class MainAutoCode extends LinearOpMode{
     //define DriveBase functions
     public void DriveForward(double power, long duration){
         FrontLeftDrive.setPower(power);
-        FrontRightDrive.setPower(power);
-        BackLeftDrive.setPower(power);
-        BackRightDrive.setPower(power);
+        FrontRightDrive.setPower(-power);
+        BackLeftDrive.setPower(-power);
+        BackRightDrive.setPower(-power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -33,9 +33,9 @@ public class MainAutoCode extends LinearOpMode{
     }
     public void DriveBackward(double power, long duration){
         FrontLeftDrive.setPower(-power);
-        FrontRightDrive.setPower(-power);
-        BackLeftDrive.setPower(-power);
-        BackRightDrive.setPower(-power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -44,9 +44,9 @@ public class MainAutoCode extends LinearOpMode{
     }
     public void TurnRight(double power, long duration){
         FrontLeftDrive.setPower(power);
-        FrontRightDrive.setPower(-power);
-        BackLeftDrive.setPower(power);
-        BackRightDrive.setPower(-power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(-power);
+        BackRightDrive.setPower(power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -55,9 +55,9 @@ public class MainAutoCode extends LinearOpMode{
     }
     public void TurnLeft(double power, long duration){
         FrontLeftDrive.setPower(-power);
-        FrontRightDrive.setPower(power);
-        BackLeftDrive.setPower(-power);
-        BackRightDrive.setPower(power);
+        FrontRightDrive.setPower(-power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(-power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -68,7 +68,7 @@ public class MainAutoCode extends LinearOpMode{
     //define Shooter and Ball Magazine functions
     public void ShootBall(double power){
         RightShooterMotor.setPower(power);
-        LeftShooterMotor.setPower(power);
+        LeftShooterMotor.setPower(-power);
         Belt.setPower(1);
         sleep(250);
         LiftServo.setPosition(0.2);
@@ -97,27 +97,19 @@ public class MainAutoCode extends LinearOpMode{
     @Override
     public void runOpMode() throws InterruptedException {
         //define DriveBase motors
-        FrontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_motor");
-        FrontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
-        BackLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
-        BackRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
+        FrontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
+        FrontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
+        BackLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
+        BackRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
 
         //defines Shooter motors and servos
-        RightShooterMotor = hardwareMap.get(DcMotor.class, "Right_shooter_motor");
-        RightShooterMotor = hardwareMap.get(DcMotor.class, "Left_shooter_motor");
+        RightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
+        RightShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
 
         //defines Ball Magazine Servos
-        Intake = hardwareMap.get(CRServo.class, "intake");
-        Belt = hardwareMap.get(CRServo.class, "belt");
-        LiftServo = hardwareMap.get(Servo.class, "LiftServo");
-
-        //reverses necessary DriveBase motors
-        BackLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        FrontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        BackRightDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        //reverses necessary Shooter motor
-        LeftShooterMotor.setDirection(DcMotor.Direction.REVERSE);
+        Intake = hardwareMap.get(CRServo.class, "Intake");
+        Belt = hardwareMap.get(CRServo.class, "Belt");
+        LiftServo = hardwareMap.get(Servo.class, "BallLift");
 
         //tells DriveBase motors to run using encoder to me more accurate
         FrontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

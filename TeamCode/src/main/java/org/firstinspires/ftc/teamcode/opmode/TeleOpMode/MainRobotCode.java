@@ -26,82 +26,203 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.firstinspires.ftc.teamcode.opmode;
+package org.firstinspires.ftc.teamcode.opmode.TeleOpMode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
-@TeleOp(name = "Drive Train", group = "Robot")
-public class DriveTrain extends OpMode {
-    // This declares the four motors needed
-    DcMotor frontLeftDrive;
-    DcMotor frontRightDrive;
-    DcMotor backLeftDrive;
-    DcMotor backRightDrive;
+@TeleOp(name = "Main Robot Code", group = "Robot")
+public class MainRobotCode extends OpMode {
 
-    // This declares the IMU needed to get the current direction the robot is facing
+    //declares the motors and servos
+    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, Rshooter ,Lshooter;
+    CRServo belt, intake;
+    Servo BallLift;
+
+
+
+
+    //declares the Inertial Measurement Unit
     IMU imu;
 
     @Override
     public void init() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_motor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
+        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        Rshooter = hardwareMap.get(DcMotor.class, "RightShooterMotor");
+        Lshooter = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+        intake = hardwareMap.get(CRServo.class, "Intake");
+        belt = hardwareMap.get(CRServo.class, "Belt");
+        BallLift = hardwareMap.get(Servo.class, "BallLift");
 
-        // We set the left motors in reverse which is needed for drive trains where the left
-        // motors are opposite to the right ones.
+        //flips the direction of the necessary motors and servos
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        Lshooter.setDirection(DcMotor.Direction.REVERSE);
 
-        // This uses RUN_USING_ENCODER to be more accurate.   If you don't have the encoder
-        // wires, you should remove these
+        //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Rshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Lshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        //setting up the IMU
         imu = hardwareMap.get(IMU.class, "imu");
-        // This needs to be changed to match the orientation on your robot
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.UP;
-
         RevHubOrientationOnRobot orientationOnRobot =
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
+    double power = 50;
+    int direction = 1;
+    boolean shooting = false;
+    boolean realitiveDrive = true, conveyor;
+    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, pressed4 = false, pressed5 = false, Epressed = false, Estopped = false;
 
     @Override
     public void loop() {
-        telemetry.addLine("Press A to reset Yaw");
+        //add telemetry
+        telemetry.addLine("Press Down D-Pad to reset Yaw");
         telemetry.addLine("Hold left bumper to drive in robot relative");
-        telemetry.addLine("The left joystick sets the robot direction");
-        telemetry.addLine("Moving the right joystick left and right turns the robot");
+        telemetry.addLine("The left joystick moves robot");
+        telemetry.addLine("The right joystick turns the robot");
+        telemetry.addLine("Is Estopped: " + Estopped);
+        telemetry.addLine("Shooter power: " + power + "%");
+        telemetry.addLine("Intake power: " + direction);
 
-        // If you press the A button, then you reset the Yaw to be zero from the way
-        // the robot is currently pointing
-        if (gamepad1.a) {
+
+        //Estop
+        if (gamepad1.touchpadWasPressed()){
+            if (!Epressed) {
+                Estopped = !Estopped;
+                belt.setPower(0);
+            }
+            Epressed = true;
+        } else {
+            Epressed = false;
+        }
+
+        //reset robot Yaw
+        if (gamepad1.dpad_down) {
             imu.resetYaw();
         }
-        // If you press the left bumper, you get a drive from the point of view of the robot
-        // (much like driving an RC vehicle)
-        if (gamepad1.left_bumper) {
-            drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+
+        if (gamepad1.a){
+            if (!pressed1){
+                conveyor = !conveyor;
+            }
+            pressed1 = true;
         } else {
-            driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            pressed1 = false;
         }
+
+        if (gamepad1.right_trigger > 0){
+            if (!pressed4){
+                direction = -direction;
+            }
+            pressed4 = true;
+        } else {
+            pressed4 = false;
+        }
+
+
+        //bumpers
+        if (gamepad1.left_bumper){
+            if (!pressed2){
+                power -= 5;
+                Math.round(power);
+            }
+            pressed2 = true;
+        } else {
+            pressed2 = false;
+        }
+        if (gamepad1.right_bumper){
+            if (!pressed3){
+                power += 5;
+                Math.round(power);
+            }
+            pressed3 = true;
+        } else {
+            pressed3 = false;
+        }
+
+        //activate intake and belt
+        if (conveyor && !Estopped) {
+            intake.setPower(direction);
+            belt.setPower(direction);
+        } else {
+            intake.setPower(0);
+            belt.setPower(0);
+        }
+
+        //Tilt Shooter
+
+        //Lift servo
+        if (gamepad1.b && !Estopped){
+            BallLift.setPosition(0.3);
+        } else {
+            BallLift.setPosition(0);
+        }
+
+        //spin up shooter
+        if (gamepad1.y && !Estopped){
+            if (!pressed5){
+                shooting = !shooting;
+            }
+            pressed5 = true;
+        } else {
+            pressed5 = false;
+        }
+
+        if (shooting){
+            Rshooter.setPower(-power/100);
+            Lshooter.setPower(-power/100);
+        } else {
+            Rshooter.setPower(0);
+            Lshooter.setPower(0);
+        }
+
+
+        //L1 button switches drives
+        if (gamepad1.dpad_up){
+            if (pressed) {
+                realitiveDrive = !realitiveDrive;
+            }
+            pressed = true;
+        } else {
+            pressed = false;
+        }
+
+        //Executes driving
+        if (realitiveDrive && !Estopped) {
+            drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        } else if (!Estopped) {
+            driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        } else {
+            driveFieldRelative(0, 0, 0);
+        }
+
+
     }
 
-    // This routine drives the robot field relative
+
+    //Field relative drive
     private void driveFieldRelative(double forward, double right, double rotate) {
         // First, convert direction being asked to drive to polar coordinates
         double theta = Math.atan2(forward, right);
@@ -119,7 +240,7 @@ public class DriveTrain extends OpMode {
         drive(newForward, newRight, rotate);
     }
 
-    // Thanks to FTC16072 for sharing this code!!
+    //traditional drive
     public void drive(double forward, double right, double rotate) {
         // This calculates the power needed for each wheel based on the amount of forward,
         // strafe right, and rotate
@@ -147,4 +268,6 @@ public class DriveTrain extends OpMode {
         backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
         backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
     }
+
+
 }
