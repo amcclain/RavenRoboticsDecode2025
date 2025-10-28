@@ -22,9 +22,9 @@ public class Red_Team_Far extends LinearOpMode{
     //define DriveBase functions
     public void DriveForward(double power, long duration){
         FrontLeftDrive.setPower(power);
-        FrontRightDrive.setPower(-power);
-        BackLeftDrive.setPower(-power);
-        BackRightDrive.setPower(-power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -33,9 +33,9 @@ public class Red_Team_Far extends LinearOpMode{
     }
     public void DriveBackward(double power, long duration){
         FrontLeftDrive.setPower(-power);
-        FrontRightDrive.setPower(power);
-        BackLeftDrive.setPower(power);
-        BackRightDrive.setPower(power);
+        FrontRightDrive.setPower(-power);
+        BackLeftDrive.setPower(-power);
+        BackRightDrive.setPower(-power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -44,9 +44,9 @@ public class Red_Team_Far extends LinearOpMode{
     }
     public void TurnRight(double power, long duration){
         FrontLeftDrive.setPower(power);
-        FrontRightDrive.setPower(power);
-        BackLeftDrive.setPower(-power);
-        BackRightDrive.setPower(power);
+        FrontRightDrive.setPower(-power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(-power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -55,9 +55,9 @@ public class Red_Team_Far extends LinearOpMode{
     }
     public void TurnLeft(double power, long duration){
         FrontLeftDrive.setPower(-power);
-        FrontRightDrive.setPower(-power);
-        BackLeftDrive.setPower(power);
-        BackRightDrive.setPower(-power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(-power);
+        BackRightDrive.setPower(power);
         sleep(duration);
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
@@ -68,7 +68,7 @@ public class Red_Team_Far extends LinearOpMode{
     //define Shooter and Ball Magazine functions
     public void ShootBall(double power){
         RightShooterMotor.setPower(power);
-        LeftShooterMotor.setPower(-power);
+        LeftShooterMotor.setPower(power);
         Belt.setPower(1);
         sleep(250);
         LiftServo.setPosition(0.2);
@@ -104,12 +104,20 @@ public class Red_Team_Far extends LinearOpMode{
 
         //defines Shooter motors and servos
         RightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
-        RightShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+        LeftShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
 
         //defines Ball Magazine Servos
         Intake = hardwareMap.get(CRServo.class, "Intake");
         Belt = hardwareMap.get(CRServo.class, "Belt");
         LiftServo = hardwareMap.get(Servo.class, "BallLift");
+
+
+        //reverses motors that are on backwards
+        BackLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        FrontRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        BackRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        LeftShooterMotor.setDirection(DcMotor.Direction.REVERSE);
+
 
         //tells DriveBase motors to run using encoder to me more accurate
         FrontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
