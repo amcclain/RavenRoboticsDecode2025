@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
-@TeleOp(name = "Drive Train", group = "Robot")
+@TeleOp(name = "Only Drive Train", group = "Robot")
 public class DriveTrain extends OpMode {
     // This declares the four motors needed
     DcMotor frontLeftDrive;

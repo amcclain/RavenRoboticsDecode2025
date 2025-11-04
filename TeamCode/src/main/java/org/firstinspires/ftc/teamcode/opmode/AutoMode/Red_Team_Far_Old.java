@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Autonomous(name = "Red Team Far", group = "robot")
+@Autonomous(name = "Red Team Far (old)", group = "robot")
 public class Red_Team_Far_Old extends LinearOpMode{
 
     //declare DriveBase motors

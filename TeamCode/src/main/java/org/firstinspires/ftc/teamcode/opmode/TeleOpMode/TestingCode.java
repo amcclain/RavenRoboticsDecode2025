@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
-@TeleOp(name = "Testing Code", group = "Robot")
+@TeleOp(name = "Without Drive Train", group = "Robot")
 public class TestingCode extends OpMode {
 
     //declares the motors and servos
