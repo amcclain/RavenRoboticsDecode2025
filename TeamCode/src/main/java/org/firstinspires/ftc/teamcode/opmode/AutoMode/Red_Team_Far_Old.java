@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Autonomous(name = "Red Team Far", group = "robot")
-public class Red_Team_Far extends LinearOpMode{
+public class Red_Team_Far_Old extends LinearOpMode{
 
     //declare DriveBase motors
     DcMotor FrontLeftDrive, FrontRightDrive, BackLeftDrive, BackRightDrive;
@@ -19,9 +19,9 @@ public class Red_Team_Far extends LinearOpMode{
     //declare Shooter motors and servos
     DcMotor RightShooterMotor ,LeftShooterMotor;
 
-    //define DriveBase functions
+    /*define DriveBase functions
     public void DriveForward(double power, long duration){
-        FrontLeftDrive.setPower(power);
+        `FrontLeftDrive.setPower(power);
         FrontRightDrive.setPower(power);
         BackLeftDrive.setPower(power);
         BackRightDrive.setPower(power);
@@ -29,7 +29,7 @@ public class Red_Team_Far extends LinearOpMode{
         FrontLeftDrive.setPower(0);
         FrontRightDrive.setPower(0);
         BackLeftDrive.setPower(0);
-        BackRightDrive.setPower(0);
+        BackRightDrive.setPower(0);`
     }
     public void DriveBackward(double power, long duration){
         FrontLeftDrive.setPower(-power);
@@ -66,7 +66,7 @@ public class Red_Team_Far extends LinearOpMode{
     }
 
     //define Shooter and Ball Magazine functions
-    public void ShootBall(double power){
+    public void ShootBall(double power) {
         RightShooterMotor.setPower(power);
         LeftShooterMotor.setPower(power);
         Belt.setPower(1);
@@ -79,20 +79,10 @@ public class Red_Team_Far extends LinearOpMode{
         LeftShooterMotor.setPower(0);
         sleep(100);
     }
-    public void SpinIntake(double power){
-        Intake.setPower(power);
-        Belt.setPower(power);
-    }
-    public void StopIntake(){
-        Intake.setPower(0);
-        Belt.setPower(0);
-    }
+    */
 
-    //functions to make code look better
-    public void Wait(long duration){
-        //just to make code more readable
-        sleep(duration);
-    }
+    double power = 0;
+    long duration = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -135,21 +125,90 @@ public class Red_Team_Far extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-        Wait(500);
 
-        DriveForward(0.5, 250);
 
-        TurnRight(0.25, 100);
+        power = 0.5; duration = 250;
+        FrontLeftDrive.setPower(power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(power);
+        sleep(duration);
+        FrontLeftDrive.setPower(0);
+        FrontRightDrive.setPower(0);
+        BackLeftDrive.setPower(0);
+        BackRightDrive.setPower(0);
 
-        ShootBall(0.5);
+        power = 0.25; duration = 100;
+        FrontLeftDrive.setPower(power);
+        FrontRightDrive.setPower(-power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(-power);
+        sleep(duration);
+        FrontLeftDrive.setPower(0);
+        FrontRightDrive.setPower(0);
+        BackLeftDrive.setPower(0);
+        BackRightDrive.setPower(0);
 
-        ShootBall(0.5);
+        power = 0.5;
+        RightShooterMotor.setPower(power);
+        LeftShooterMotor.setPower(power);
+        Belt.setPower(1);
+        sleep(250);
+        LiftServo.setPosition(0.2);
+        Belt.setPower(0);
+        sleep(100);
+        LiftServo.setPosition(0);
+        RightShooterMotor.setPower(0);
+        LeftShooterMotor.setPower(0);
+        sleep(100);
 
-        ShootBall(0.5);
+        power = 0.5;
+        RightShooterMotor.setPower(power);
+        LeftShooterMotor.setPower(power);
+        Belt.setPower(1);
+        sleep(250);
+        LiftServo.setPosition(0.2);
+        Belt.setPower(0);
+        sleep(100);
+        LiftServo.setPosition(0);
+        RightShooterMotor.setPower(0);
+        LeftShooterMotor.setPower(0);
+        sleep(100);
 
-        TurnLeft(0.25, 100);
+        power = 0.5;
+        RightShooterMotor.setPower(power);
+        LeftShooterMotor.setPower(power);
+        Belt.setPower(1);
+        sleep(250);
+        LiftServo.setPosition(0.2);
+        Belt.setPower(0);
+        sleep(100);
+        LiftServo.setPosition(0);
+        RightShooterMotor.setPower(0);
+        LeftShooterMotor.setPower(0);
+        sleep(100);
 
-        DriveForward(0.5, 250);
+        power = 0.25; duration = 100;
+        FrontLeftDrive.setPower(-power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(-power);
+        BackRightDrive.setPower(power);
+        sleep(duration);
+        FrontLeftDrive.setPower(0);
+        FrontRightDrive.setPower(0);
+        BackLeftDrive.setPower(0);
+        BackRightDrive.setPower(0);
+
+        power = 0.5; duration = 250;
+        FrontLeftDrive.setPower(power);
+        FrontRightDrive.setPower(power);
+        BackLeftDrive.setPower(power);
+        BackRightDrive.setPower(power);
+        sleep(duration);
+        FrontLeftDrive.setPower(0);
+        FrontRightDrive.setPower(0);
+        BackLeftDrive.setPower(0);
+        BackRightDrive.setPower(0);
 
     }
 }
