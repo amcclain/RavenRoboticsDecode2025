@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
@@ -25,9 +24,10 @@ public class Red_Team_Close extends LinearOpMode{
     //declare Shooter motors and servos
     DcMotor RightShooterMotor ,LeftShooterMotor;
 
-    WaverlyGamepad wgp = new WaverlyGamepad(gamepad1);
+    WaverlyGamepad wgp;
 
-    long drivingTime = 2500;
+    long AdjustableTime = 2700;
+    double AdjustablePower = 0.4;
 
     //define DriveBase functions
     public void DriveForward(double power, long duration){
@@ -79,15 +79,15 @@ public class Red_Team_Close extends LinearOpMode{
     public void ShootBall(double power){
         RightShooterMotor.setPower(power);
         LeftShooterMotor.setPower(power);
-        Belt.setPower(1);
-        sleep(250);
+        Intake.setPower(1);
+        sleep(1250);
         LiftServo.setPosition(0.3);
-        Belt.setPower(0);
-        sleep(100);
+        sleep(1000);
+        Intake.setPower(0);
         LiftServo.setPosition(0);
         RightShooterMotor.setPower(0);
         LeftShooterMotor.setPower(0);
-        sleep(100);
+        sleep(1250);
     }
     public void SpinIntake(double power){
         Intake.setPower(power);
@@ -124,7 +124,7 @@ public class Red_Team_Close extends LinearOpMode{
 
         //reverses motors that are on backwards
         FrontLeftDrive.setDirection(REVERSE);
-        LeftShooterMotor.setDirection(REVERSE);
+        RightShooterMotor.setDirection(REVERSE);
 
 
         //tells DriveBase motors to run using encoder to me more accurate
@@ -137,17 +137,29 @@ public class Red_Team_Close extends LinearOpMode{
         RightShooterMotor.setMode(RUN_USING_ENCODER);
         LeftShooterMotor.setMode(RUN_USING_ENCODER);
 
+        if (wgp == null){
+            wgp = new WaverlyGamepad(gamepad1);
+        }
+
         while (!isStarted()){
             wgp.readButtons();
 
-            //change time driving
+            //change time
             if (wgp.dpadDownPressed) {
-                drivingTime = Math.max(drivingTime - 100, 0);
+                AdjustableTime = Math.max(AdjustableTime - 100, 0);
             } else if (wgp.dpadUpPressed){
-                drivingTime += 100;
+                AdjustableTime += 100;
             }
 
-            telemetry.addLine("driving time is: " + drivingTime);
+            //change power
+            if (wgp.dpadLeftPressed) {
+                AdjustablePower = Math.max(AdjustablePower - 0.05, 0);
+            } else if (wgp.dpadRightPressed){
+                AdjustablePower += 0.05;
+            }
+
+            telemetry.addLine("driving time is: " + AdjustableTime);
+            telemetry.addLine("shoot power is: " + AdjustablePower);
             telemetry.update();
         }
 
@@ -157,9 +169,19 @@ public class Red_Team_Close extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
+        Belt.setPower(1);
+
         Wait(500);
 
-        DriveBackward(0.5, drivingTime);
+        DriveBackward(0.5, 2700);
+
+        ShootBall(0.4);
+
+        ShootBall(0.4);
+
+        ShootBall(0.4);
+
+
 
 
 

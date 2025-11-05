@@ -15,6 +15,10 @@ public class WaverlyGamepad {
     public boolean aPressed = false;
     private boolean aWasPressed = false;
 
+    public boolean y = false;
+    public boolean yPressed = false;
+    private boolean yWasPressed = false;
+
     public boolean dpadUp = false;
     public boolean dpadUpPressed = false;
     private boolean dpadUpWasPressed = false;
@@ -55,6 +59,10 @@ public class WaverlyGamepad {
         a = gp.a;
         aPressed = a && !aWasPressed;
         aWasPressed = a;
+
+        y = gp.y;
+        yPressed = y && !yWasPressed;
+        yWasPressed = y;
 
         dpadUp = gp.dpad_up;
         dpadUpPressed = dpadUp && !dpadUpWasPressed;

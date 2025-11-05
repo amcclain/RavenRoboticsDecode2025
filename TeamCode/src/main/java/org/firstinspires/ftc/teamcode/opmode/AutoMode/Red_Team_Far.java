@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.AutoMode;
 
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -71,7 +74,7 @@ public class Red_Team_Far extends LinearOpMode{
         LeftShooterMotor.setPower(power);
         Belt.setPower(1);
         sleep(250);
-        LiftServo.setPosition(0.3);
+        LiftServo.setPosition(0.2);
         Belt.setPower(0);
         sleep(100);
         LiftServo.setPosition(0);
@@ -113,21 +116,19 @@ public class Red_Team_Far extends LinearOpMode{
 
 
         //reverses motors that are on backwards
-        BackLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        FrontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        BackRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        LeftShooterMotor.setDirection(DcMotor.Direction.REVERSE);
+        FrontLeftDrive.setDirection(REVERSE);
+        RightShooterMotor.setDirection(REVERSE);
 
 
         //tells DriveBase motors to run using encoder to me more accurate
-        FrontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        FrontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BackLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BackRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FrontLeftDrive.setMode(RUN_USING_ENCODER);
+        FrontRightDrive.setMode(RUN_USING_ENCODER);
+        BackLeftDrive.setMode(RUN_USING_ENCODER);
+        BackRightDrive.setMode(RUN_USING_ENCODER);
 
         //tells Shooter motors to run using encoder to me more accurate
-        RightShooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        LeftShooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RightShooterMotor.setMode(RUN_USING_ENCODER);
+        LeftShooterMotor.setMode(RUN_USING_ENCODER);
 
 
         waitForStart();

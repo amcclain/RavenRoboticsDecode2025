@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 
 
 @TeleOp(name = "Main", group = "Robot")
@@ -47,8 +48,7 @@ public class MainRobotCode extends OpMode {
     CRServo belt, intake;
     Servo BallLift;
 
-
-
+    WaverlyGamepad gp = new WaverlyGamepad(gamepad1);
 
     //declares the Inertial Measurement Unit
     IMU imu;
@@ -105,50 +105,22 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Shooter power: " + power + "%");
         telemetry.addLine("Intake Status: " + (direction == 1? "Intake" : "Eject"));
 
+        gp.readButtons();
+
 
         //reset robot Yaw
         if (gamepad1.dpad_down) {
             imu.resetYaw();
         }
 
+
         //intake
-        if (gamepad1.a){
-            if (!pressed1){
-                intakeActive = !intakeActive;
-            }
-            pressed1 = true;
-        } else {
-            pressed1 = false;
+        if (gp.a){
+            intakeActive = !intakeActive;
         }
-        if (gamepad1.right_trigger > 0){
-            if (!pressed4){
-                direction = -direction;
-            }
-            pressed4 = true;
-        } else {
-            pressed4 = false;
+        if (gp.rightTriggerPressed){
+            direction = -direction;
         }
-
-
-        //bumpers
-        if (gamepad1.left_bumper){
-            if (!pressed2){
-                power = Math.max(power - 5, 0);
-            }
-            pressed2 = true;
-        } else {
-            pressed2 = false;
-        }
-        if (gamepad1.right_bumper){
-            if (!pressed3){
-                power = Math.min(power + 5, 100);
-            }
-            pressed3 = true;
-        } else {
-            pressed3 = false;
-        }
-
-        //activate intake and belt
         if (intakeActive) {
             intake.setPower(direction);
             belt.setPower(direction);
@@ -157,23 +129,17 @@ public class MainRobotCode extends OpMode {
             belt.setPower(0);
         }
 
-        //Lift servo
-        if (gamepad1.b){
-            BallLift.setPosition(0.3);
-        } else {
-            BallLift.setPosition(0);
-        }
 
-        //spin up shooter
-        if (gamepad1.y){
-            if (!pressed5){
-                shooting = !shooting;
-            }
-            pressed5 = true;
-        } else {
-            pressed5 = false;
+        //shooting
+        if (gp.leftBumperPressed){
+            power = Math.max(power - 5, 0);
         }
-
+        if (gp.rightBumperPressed){
+            power = Math.min(power + 5, 100);
+        }
+        if (gp.yPressed){
+            shooting = !shooting;
+        }
         if (shooting){
             Rshooter.setPower(power/100d);
             Lshooter.setPower(power/100d);
@@ -183,17 +149,18 @@ public class MainRobotCode extends OpMode {
         }
 
 
-        //switches drives
-        if (gamepad1.dpad_up){
-            if (pressed) {
-                relativeDrive = !relativeDrive;
-            }
-            pressed = true;
+        //Lift servo
+        if (gamepad1.b){
+            BallLift.setPosition(0.3);
         } else {
-            pressed = false;
+            BallLift.setPosition(0);
         }
 
-        //Executes driving
+
+        //driving
+        if (gp.dpadUpPressed){
+            relativeDrive = !relativeDrive;
+        }
         if (relativeDrive) {
             drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
         } else {
