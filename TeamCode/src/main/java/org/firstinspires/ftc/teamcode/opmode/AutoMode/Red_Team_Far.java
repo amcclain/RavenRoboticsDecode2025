@@ -71,7 +71,7 @@ public class Red_Team_Far extends LinearOpMode{
         LeftShooterMotor.setPower(power);
         Belt.setPower(1);
         sleep(250);
-        LiftServo.setPosition(0.2);
+        LiftServo.setPosition(0.3);
         Belt.setPower(0);
         sleep(100);
         LiftServo.setPosition(0);
