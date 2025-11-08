@@ -106,7 +106,7 @@ public class Blue_Team_Close extends LinearOpMode{
         intake.setPower(1);
         sleep(1250);
         liftServo.setPosition(0.3);
-        sleep(1000);
+        sleep(1250);
         intake.setPower(0);
         liftServo.setPosition(0);
         rightShooterMotor.setPower(0);
