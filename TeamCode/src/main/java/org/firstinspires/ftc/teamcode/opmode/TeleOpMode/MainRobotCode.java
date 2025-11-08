@@ -48,7 +48,7 @@ public class MainRobotCode extends OpMode {
     CRServo belt, intake;
     Servo BallLift;
 
-    WaverlyGamepad gp = new WaverlyGamepad(gamepad1);
+    WaverlyGamepad gp = null;
 
     //declares the Inertial Measurement Unit
     IMU imu;
@@ -79,6 +79,8 @@ public class MainRobotCode extends OpMode {
         Rshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Lshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        gp = new WaverlyGamepad(gamepad1);
+
         //setting up the IMU
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
@@ -89,11 +91,11 @@ public class MainRobotCode extends OpMode {
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
-    int power = 50;
+    int power = 40;
+    int maxPower = 55;
     int direction = 1;
     boolean shooting = false;
     boolean relativeDrive = true, intakeActive = false;
-    boolean pressed = false, pressed1 = false, pressed2 = false, pressed3 = false, pressed4 = false, pressed5 = false;
 
     @Override
     public void loop() {
@@ -109,7 +111,7 @@ public class MainRobotCode extends OpMode {
 
 
         //reset robot Yaw
-        if (gamepad1.dpad_down) {
+        if (gp.dpadDownPressed) {
             imu.resetYaw();
         }
 
@@ -135,7 +137,7 @@ public class MainRobotCode extends OpMode {
             power = Math.max(power - 5, 0);
         }
         if (gp.rightBumperPressed){
-            power = Math.min(power + 5, 100);
+            power = Math.min(power + 5, maxPower);
         }
         if (gp.yPressed){
             shooting = !shooting;
@@ -150,7 +152,7 @@ public class MainRobotCode extends OpMode {
 
 
         //Lift servo
-        if (gamepad1.b){
+        if (gp.b){
             BallLift.setPosition(0.3);
         } else {
             BallLift.setPosition(0);
