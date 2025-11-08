@@ -105,6 +105,7 @@ public class MainRobotCode extends OpMode {
         //add telemetry
         telemetry.addLine("Press Down D-Pad to reset Yaw");
         telemetry.addLine("Press Up D-Pad to toggle between robot and field relative");
+        telemetry.addLine("Robot is in " + (relativeDrive? "Field Relative" : "Robot Relative") + " mode");
         telemetry.addLine("The left joystick moves robot");
         telemetry.addLine("The right joystick turns the robot");
         telemetry.addLine("Shooter power: " + velocity/20d + "%");
@@ -131,10 +132,7 @@ public class MainRobotCode extends OpMode {
         }
         if (intakeActive) {
             intake.setPower(direction);
-            /*if (gp.b)
-                belt.setPower(0);
-            else*/
-                belt.setPower(direction);
+            belt.setPower(direction);
         } else {
             intake.setPower(0);
             belt.setPower(0);
