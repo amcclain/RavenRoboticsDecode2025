@@ -66,7 +66,7 @@ public class WaverlyGamepad {
 
         b = gp.b;
         bPressed = b && !bWasPressed;
-        aWasPressed = b;
+        bWasPressed = b;
 
         y = gp.y;
         yPressed = y && !yWasPressed;

@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -44,7 +45,8 @@ import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
-    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, Rshooter ,Lshooter;
+    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    DcMotorEx Rshooter ,Lshooter;
     CRServo belt, intake;
     Servo BallLift;
 
@@ -59,8 +61,8 @@ public class MainRobotCode extends OpMode {
         frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
         backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
         backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
-        Rshooter = hardwareMap.get(DcMotor.class, "RightShooterMotor");
-        Lshooter = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+        Rshooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
+        Lshooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
         intake = hardwareMap.get(CRServo.class, "Intake");
         belt = hardwareMap.get(CRServo.class, "Belt");
         BallLift = hardwareMap.get(Servo.class, "BallLift");
@@ -91,8 +93,9 @@ public class MainRobotCode extends OpMode {
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
-    int power = 40;
-    int maxPower = 55;
+    int velocity = 1000;
+    int maxVelocity = 2000;
+    int stepVelocity = 20*1;
     int direction = 1;
     boolean shooting = false;
     boolean relativeDrive = true, intakeActive = false;
@@ -104,8 +107,11 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Press Up D-Pad to toggle between robot and field relative");
         telemetry.addLine("The left joystick moves robot");
         telemetry.addLine("The right joystick turns the robot");
-        telemetry.addLine("Shooter power: " + power + "%");
+        telemetry.addLine("Shooter power: " + velocity/20d + "%");
+        telemetry.addLine("Current shooter velocity Left: " + Lshooter.getVelocity() + " Right: " + Rshooter.getVelocity());
         telemetry.addLine("Intake Status: " + (direction == 1? "Intake" : "Eject"));
+        telemetry.addLine("Intake Active: " + intakeActive);
+
 
         gp.readButtons();
 
@@ -117,7 +123,7 @@ public class MainRobotCode extends OpMode {
 
 
         //intake
-        if (gp.a){
+        if (gp.aPressed){
             intakeActive = !intakeActive;
         }
         if (gp.rightTriggerPressed){
@@ -125,7 +131,10 @@ public class MainRobotCode extends OpMode {
         }
         if (intakeActive) {
             intake.setPower(direction);
-            belt.setPower(direction);
+            /*if (gp.b)
+                belt.setPower(0);
+            else*/
+                belt.setPower(direction);
         } else {
             intake.setPower(0);
             belt.setPower(0);
@@ -134,20 +143,20 @@ public class MainRobotCode extends OpMode {
 
         //shooting
         if (gp.leftBumperPressed){
-            power = Math.max(power - 5, 0);
+            velocity = Math.max(velocity - stepVelocity, 0);
         }
         if (gp.rightBumperPressed){
-            power = Math.min(power + 5, maxPower);
+            velocity = Math.min(velocity + stepVelocity, maxVelocity);
         }
         if (gp.yPressed){
             shooting = !shooting;
         }
         if (shooting){
-            Rshooter.setPower(power/100d);
-            Lshooter.setPower(power/100d);
+            Rshooter.setVelocity(velocity);
+            Lshooter.setVelocity(velocity);
         } else {
-            Rshooter.setPower(0);
-            Lshooter.setPower(0);
+            Rshooter.setVelocity(0);
+            Lshooter.setVelocity(0);
         }
 
 
