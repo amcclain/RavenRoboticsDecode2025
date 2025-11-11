@@ -45,10 +45,10 @@ import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
-    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake;
     DcMotorEx Rshooter ,Lshooter;
-    CRServo belt, intake;
-    Servo BallLift;
+    CRServo belt;//, intake;
+    Servo ballLiftA, ballLiftB;
 
     WaverlyGamepad gp = null;
 
@@ -57,15 +57,22 @@ public class MainRobotCode extends OpMode {
 
     @Override
     public void init() {
+
+        //define DcMotors
         frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
         frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
         backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
         backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        intake = hardwareMap.get(DcMotor.class, "Intake");
+
+        //define DcMotorExs
         Rshooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
         Lshooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
-        intake = hardwareMap.get(CRServo.class, "Intake");
+
+        //intake = hardwareMap.get(CRServo.class, "Intake");
         belt = hardwareMap.get(CRServo.class, "Belt");
-        BallLift = hardwareMap.get(Servo.class, "BallLift");
+        ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
+        ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
 
         //flips the direction of the necessary motors and servos
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -95,31 +102,54 @@ public class MainRobotCode extends OpMode {
     }
     int velocity = 1000;
     int maxVelocity = 2000;
-    int stepVelocity = 20*1;
+    int stepVelocitySize = 1;
+    int stepVelocity = 20*stepVelocitySize;
     int direction = 1;
     boolean shooting = false;
-    boolean relativeDrive = true, intakeActive = false;
+    boolean relativeDrive = true;
+    boolean intakeActive = false;
+    boolean showControls = false;
 
     @Override
     public void loop() {
         //add telemetry
-        telemetry.addLine("Press Down D-Pad to reset Yaw");
-        telemetry.addLine("Press Up D-Pad to toggle between robot and field relative");
-        telemetry.addLine("Robot is in " + (relativeDrive? "Field Relative" : "Robot Relative") + " mode");
-        telemetry.addLine("The left joystick moves robot");
-        telemetry.addLine("The right joystick turns the robot");
-        telemetry.addLine("Shooter power: " + velocity/20d + "%");
-        telemetry.addLine("Current shooter velocity Left: " + Lshooter.getVelocity() + " Right: " + Rshooter.getVelocity());
-        telemetry.addLine("Intake Status: " + (direction == 1? "Intake" : "Eject"));
-        telemetry.addLine("Intake Active: " + intakeActive);
+        if (showControls) {
+            telemetry.addLine("Controls:");
+            telemetry.addLine("Down D-Pad resets Yaw");
+            telemetry.addLine("Up D-Pad toggles between robot and field relative");
+            telemetry.addLine("Triangle spins shooter motors");
+            telemetry.addLine("Circle launches top ball");
+            telemetry.addLine("Square launches middle ball");
+            telemetry.addLine("X activates intake");
+            telemetry.addLine("Left joystick moves robot");
+            telemetry.addLine("Right joystick turns the robot");
+            telemetry.addLine("Left and right bumpers increase and decrease the shooting power by " + stepVelocitySize + "%");
+            telemetry.addLine("Right Trigger flips intake direction");
+        } else {
+            telemetry.addLine("Info:");
+            telemetry.addLine("Robot is in " + (relativeDrive ? "Field Relative" : "Robot Relative") + " driving mode");
+            telemetry.addLine("Target shooter power: " + velocity / 20 + "%");
+            telemetry.addLine("Current shooter power: Left: " + Lshooter.getVelocity() / 20d + "% Right: " + Rshooter.getVelocity() / 20d + "%");
+            telemetry.addLine("Intake Status: " + (direction == 1 ? "Intake" : "Eject"));
+            telemetry.addLine("Intake Active: " + intakeActive);
+        }
+        telemetry.addLine("");
+        telemetry.addLine("");
+        telemetry.addLine("");
+        telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
 
 
         gp.readButtons();
 
 
         //reset robot Yaw
-        if (gp.dpadDownPressed) {
+        if (gp.dpadDownPressed){
             imu.resetYaw();
+        }
+
+        //show or hide controls
+        if (gp.dpadLeftPressed){
+            showControls = !showControls;
         }
 
 
@@ -158,11 +188,18 @@ public class MainRobotCode extends OpMode {
         }
 
 
-        //Lift servo
+        //Lift servo A
         if (gp.b){
-            BallLift.setPosition(0.3);
+            ballLiftA.setPosition(0.3);
         } else {
-            BallLift.setPosition(0);
+            ballLiftA.setPosition(0);
+        }
+
+        //Lift servo b
+        if (gp.x){
+            ballLiftB.setPosition(0.8);
+        } else {
+            ballLiftB.setPosition(0.5);
         }
 
 
