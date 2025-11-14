@@ -17,9 +17,10 @@ public class Red_Team_Close extends LinearOpMode{
     //declare DriveBase motors
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
-    //Declare Ball Magazine Servos
+    //Declare Ball Magazine Servos and motors
+    DcMotor intake;
     Servo liftServo;
-    CRServo intake, belt;
+    CRServo belt;
 
     //declare Shooter motors and servos
     DcMotor rightShooterMotor, leftShooterMotor;
@@ -140,8 +141,8 @@ public class Red_Team_Close extends LinearOpMode{
         rightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
         leftShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
 
-        //defines Ball Magazine Servos
-        intake = hardwareMap.get(CRServo.class, "Intake");
+        //defines Ball Magazine Servos and motors
+        intake = hardwareMap.get(DcMotor.class, "Intake");
         belt = hardwareMap.get(CRServo.class, "Belt");
         liftServo = hardwareMap.get(Servo.class, "BallLift");
 

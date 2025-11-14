@@ -37,8 +37,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.lang.Math;
+import java.util.List;
 
 
 @TeleOp(name = "Main", group = "Robot")
@@ -47,13 +54,27 @@ public class MainRobotCode extends OpMode {
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake;
     DcMotorEx Rshooter ,Lshooter;
-    CRServo belt;//, intake;
+    CRServo belt;
     Servo ballLiftA, ballLiftB;
 
     WaverlyGamepad gp = null;
 
+    //camera stuff
+    private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
+
     //declares the Inertial Measurement Unit
     IMU imu;
+
+    //camera processing
+    boolean redTeam = true;
+    boolean autoPower = false;
+    double distToTower;
+    double angleToTower;
+    double recVelocity;
+    String ballOrder = "unknown";
+    double[] tags = new double[5];
+
 
     @Override
     public void init() {
@@ -99,6 +120,8 @@ public class MainRobotCode extends OpMode {
         RevHubOrientationOnRobot orientationOnRobot =
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        initAprilTag();
     }
     int velocity = 1000;
     int maxVelocity = 2000;
@@ -132,11 +155,33 @@ public class MainRobotCode extends OpMode {
             telemetry.addLine("Current shooter power: Left: " + Lshooter.getVelocity() / 20d + "% Right: " + Rshooter.getVelocity() / 20d + "%");
             telemetry.addLine("Intake Status: " + (direction == 1 ? "Intake" : "Eject"));
             telemetry.addLine("Intake Active: " + intakeActive);
+            telemetry.addLine("Auto power level active: " + autoPower);
         }
         telemetry.addLine("");
-        telemetry.addLine("");
-        telemetry.addLine("");
         telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
+        telemetry.addLine("");
+        telemetry.addLine("");
+        //telemetryAprilTag();
+
+
+        tags = detectTags(new double[5]);
+        if (!redTeam){
+            distToTower = tags[0];
+            angleToTower = tags[1];
+        } else {
+            distToTower = tags[2];
+            angleToTower = tags[3];
+        }
+        if (tags[4] != 0)
+            ballOrder = (tags[4] == 1? "GPP" : (tags[4] == 2? "PGP" : "PPG"));
+
+        recVelocity = stepVelocity*calculatePower(distToTower);
+
+        telemetry.addLine("Correct order of balls: " + ballOrder);
+        telemetry.addLine("");
+        telemetry.addLine("Distance to the " + (redTeam? "red" : "blue") + " tower: " + (int) distToTower);
+        telemetry.addLine("");
+        telemetry.addLine("Recommended power in order to score is: " + recVelocity / stepVelocity + "%");
 
 
         gp.readButtons();
@@ -176,8 +221,15 @@ public class MainRobotCode extends OpMode {
         if (gp.rightBumperPressed){
             velocity = Math.min(velocity + stepVelocity, maxVelocity);
         }
+        if (gp.leftTriggerPressed){
+            autoPower = !autoPower;
+        }
         if (gp.yPressed){
             shooting = !shooting;
+        }
+        if (autoPower){
+            velocity = (int) Math.round(recVelocity);
+            pointToTower(angleToTower);
         }
         if (shooting){
             Rshooter.setVelocity(velocity);
@@ -264,5 +316,154 @@ public class MainRobotCode extends OpMode {
         backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
     }
 
+    private void initAprilTag() {
+
+        // Create the AprilTag processor.
+        aprilTag = new AprilTagProcessor.Builder()
+
+                // The following default settings are available to un-comment and edit as needed.
+                //.setDrawAxes(false)
+                //.setDrawCubeProjection(false)
+                //.setDrawTagOutline(true)
+                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+
+                // == CAMERA CALIBRATION ==
+                // If you do not manually specify calibration parameters, the SDK will attempt
+                // to load a predefined calibration for your camera.
+                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+                // ... these parameters are fx, fy, cx, cy.
+
+                .build();
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the webcam
+        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+
+
+        // Choose a camera resolution. Not all cameras support all resolutions.
+        //builder.setCameraResolution(new Size(640, 480));
+
+        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+        builder.enableLiveView(true);
+
+        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+
+        // Choose whether or not LiveView stops if no processors are enabled.
+        // If set "true", monitor shows solid orange screen if no processors enabled.
+        // If set "false", monitor shows camera view without annotations.
+        //builder.setAutoStopLiveView(false);
+
+        // Set and enable the processor.
+        builder.addProcessor(aprilTag);
+
+        // Build the Vision Portal, using the above settings.
+        visionPortal = builder.build();
+
+        // Disable or re-enable the aprilTag processor at any time.
+        visionPortal.setProcessorEnabled(aprilTag, true);
+
+    }   // end method initAprilTag()
+
+    private void telemetryAprilTag() {
+
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+        // Step through the list of detections and display info for each one.
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+            } else {
+                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+            }
+        }   // end for() loop
+
+        // Add "key" information to telemetry
+        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+        telemetry.addLine("RBE = Range, Bearing & Elevation");
+
+    }   // end method telemetryAprilTag()
+
+    private double[] detectTags(double[] currentTags){
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        //0 is dist to blue tower
+        //1 is angle to blue tower
+        //2 is dist to red tower
+        //3 is angle to red tower
+        //4 is artifact order
+
+        for (AprilTagDetection tag : currentDetections){
+            if (tag.id == 20){
+                currentTags[0] = tag.ftcPose.range;
+                currentTags[1] = tag.ftcPose.bearing;
+            } else if (tag.id == 24){
+                currentTags[2] = tag.ftcPose.range;
+                currentTags[3] = tag.ftcPose.bearing;
+            } else if (tag.id == 21){
+                currentTags[4] = 1;
+            } else if (tag.id == 22){
+                currentTags[4] = 2;
+            } else if (tag.id == 23){
+                currentTags[4] = 3;
+            }
+        }
+
+        return currentTags;
+
+
+
+    }
+
+    private double calculatePower(double distance){
+        double newPower;
+
+        //limit distance
+        distance = Math.max(distance, 50);
+        distance = Math.min(distance, 90);
+
+        //5th order polynomial regression
+        newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
+
+        //make sure power is above 0%
+        newPower = Math.max(newPower, 0);
+
+        //round to the nearest %
+        newPower = Math.round(newPower);
+
+        return newPower;
+    }
+
+    private void turnLeft(double power){
+        frontLeftDrive.setPower(-power);
+        frontRightDrive.setPower(power);
+        backLeftDrive.setPower(-power);
+        backRightDrive.setPower(power);
+    }
+
+    private void turnRight(double power){
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(-power);
+        backLeftDrive.setPower(power);
+        backRightDrive.setPower(-power);
+    }
+
+    private void pointToTower(double angle){
+        //double power = Math.min(Math.abs(angle), 0.5);
+        if (angle < -1){
+            turnRight(0.5);
+        } else if (angle > 1){
+            turnLeft(0.5);
+        }
+    }
 
 }
