@@ -335,10 +335,6 @@ public class ShowCase extends OpMode {
     private double calculatePower(double distance){
         double newPower;
 
-        //limit distance
-        distance = Math.max(distance, 50);
-        distance = Math.min(distance, 90);
-
         //5th order polynomial regression
         newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
 
