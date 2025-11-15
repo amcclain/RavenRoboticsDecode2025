@@ -206,7 +206,7 @@ public class MainRobotCode extends OpMode {
         }
         if (intakeActive) {
             intake.setPower(direction);
-            belt.setPower(direction);
+            belt.setPower(direction*0.8);
         } else {
             intake.setPower(0);
             belt.setPower(0);

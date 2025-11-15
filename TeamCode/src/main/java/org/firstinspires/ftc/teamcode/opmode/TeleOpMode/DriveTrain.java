@@ -32,76 +32,177 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 
 @TeleOp(name = "Only Drive Train", group = "Robot")
 public class DriveTrain extends OpMode {
-    // This declares the four motors needed
-    DcMotor frontLeftDrive;
-    DcMotor frontRightDrive;
-    DcMotor backLeftDrive;
-    DcMotor backRightDrive;
 
-    // This declares the IMU needed to get the current direction the robot is facing
+    //declares the motors and servos
+    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
+    DcMotorEx Rshooter, Lshooter;
+    Servo ballLiftA, ballLiftB;
+
+    WaverlyGamepad gp = null;
+
+    //camera stuff
+    private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
+
+    //declares the Inertial Measurement Unit
     IMU imu;
+
+    //camera processing
+    boolean redTeam = true;
+    double distToTower;
+    double angleToTower;
+    double recVelocity;
+    String ballOrder = "unknown";
+    double[] tags = new double[5];
+
 
     @Override
     public void init() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_motor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
-        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
 
-        // We set the left motors in reverse which is needed for drive trains where the left
-        // motors are opposite to the right ones.
+        //define DcMotors
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
+        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        intake = hardwareMap.get(DcMotor.class, "Intake");
+        belt = hardwareMap.get(DcMotor.class, "Belt");
+
+        //define DcMotorExs
+        Rshooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
+        Lshooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
+
+        //define servos
+        ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
+        ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
+
+        //flips the direction of the necessary motors
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        Rshooter.setDirection(DcMotor.Direction.REVERSE);
+        belt.setDirection(DcMotor.Direction.REVERSE);
 
-        // This uses RUN_USING_ENCODER to be more accurate.   If you don't have the encoder
-        // wires, you should remove these
+        //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Rshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Lshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        gp = new WaverlyGamepad(gamepad1);
+
+        //setting up the IMU
         imu = hardwareMap.get(IMU.class, "imu");
-        // This needs to be changed to match the orientation on your robot
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.UP;
-
         RevHubOrientationOnRobot orientationOnRobot =
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        initAprilTag();
     }
+    int velocity = 1000;
+    int stepVelocitySize = 1;
+    int stepVelocity = 20 * stepVelocitySize;
+    boolean shooting = false;
+    boolean relativeDrive = true;
+    boolean intakeActive = false;
 
     @Override
     public void loop() {
-        telemetry.addLine("Press A to reset Yaw");
-        telemetry.addLine("Hold left bumper to drive in robot relative");
-        telemetry.addLine("The left joystick sets the robot direction");
-        telemetry.addLine("Moving the right joystick left and right turns the robot");
 
-        // If you press the A button, then you reset the Yaw to be zero from the way
-        // the robot is currently pointing
-        if (gamepad1.a) {
-            imu.resetYaw();
-        }
-        // If you press the left bumper, you get a drive from the point of view of the robot
-        // (much like driving an RC vehicle)
-        if (gamepad1.left_bumper) {
-            drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        tags = detectTags(new double[5]);
+        if (!redTeam){
+            distToTower = tags[0];
+            angleToTower = tags[1];
         } else {
-            driveFieldRelative(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            distToTower = tags[2];
+            angleToTower = tags[3];
         }
+        if (tags[4] != 0)
+            ballOrder = (tags[4] == 1? "GPP" : (tags[4] == 2? "PGP" : "PPG"));
+
+        recVelocity = stepVelocity*calculatePower(distToTower);
+
+        telemetry.addLine("Distance to the tag: " + (int) distToTower);
+        telemetry.addLine("");
+        telemetry.addLine("Power is: " + recVelocity / stepVelocity + "%");
+        telemetry.addLine("");
+        telemetry.addLine("Controls are:\n  joysticks to move,\n  X to toggle intake,\n  Square to switch to field relative,\n  Triangle to aim,\n  Circle to shoot a ball");
+
+
+
+        gp.readButtons();
+
+        //intake
+        if (gp.aPressed){
+            intakeActive = !intakeActive;
+        }
+        if (intakeActive) {
+            intake.setPower(1);
+            belt.setPower(0.5);
+        } else {
+            intake.setPower(0);
+            belt.setPower(0);
+        }
+
+
+        //shooting
+        if (gp.yPressed){
+            shooting = !shooting;
+        }
+        if (shooting){
+            velocity = (int) Math.round(recVelocity);
+            velocity = Math.min(velocity, 100);
+            pointToTower(angleToTower);
+            Rshooter.setVelocity(velocity);
+            Lshooter.setVelocity(velocity);
+        } else {
+            Rshooter.setVelocity(0);
+            Lshooter.setVelocity(0);
+        }
+
+        //Lift servo A
+        if (gp.b){
+            ballLiftA.setPosition(0.3);
+        } else {
+            ballLiftA.setPosition(0.06);
+        }
+
+        //driving
+        if (gp.xPressed){
+            relativeDrive = !relativeDrive;
+        }
+        if (relativeDrive) {
+            drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        } else {
+            driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+        }
+
+
     }
 
-    // This routine drives the robot field relative
+
+
     private void driveFieldRelative(double forward, double right, double rotate) {
         // First, convert direction being asked to drive to polar coordinates
         double theta = Math.atan2(forward, right);
@@ -119,7 +220,6 @@ public class DriveTrain extends OpMode {
         drive(newForward, newRight, rotate);
     }
 
-    // Thanks to FTC16072 for sharing this code!!
     public void drive(double forward, double right, double rotate) {
         // This calculates the power needed for each wheel based on the amount of forward,
         // strafe right, and rotate
@@ -129,7 +229,7 @@ public class DriveTrain extends OpMode {
         double backLeftPower = forward - right + rotate;
 
         double maxPower = 1.0;
-        double maxSpeed = 1.0;  // make this slower for outreaches
+        double maxSpeed = 0.5;  // make this slower for outreaches
 
         // This is needed to make sure we don't pass > 1.0 to any wheel
         // It allows us to keep all of the motors in proportion to what they should
@@ -147,4 +247,127 @@ public class DriveTrain extends OpMode {
         backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
         backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
     }
+
+    private void initAprilTag() {
+
+        // Create the AprilTag processor.
+        aprilTag = new AprilTagProcessor.Builder()
+
+                // The following default settings are available to un-comment and edit as needed.
+                //.setDrawAxes(false)
+                //.setDrawCubeProjection(false)
+                //.setDrawTagOutline(true)
+                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+
+                // == CAMERA CALIBRATION ==
+                // If you do not manually specify calibration parameters, the SDK will attempt
+                // to load a predefined calibration for your camera.
+                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+                // ... these parameters are fx, fy, cx, cy.
+
+                .build();
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the webcam
+        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+
+
+        // Choose a camera resolution. Not all cameras support all resolutions.
+        //builder.setCameraResolution(new Size(640, 480));
+
+        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+        builder.enableLiveView(true);
+
+        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+
+        // Choose whether or not LiveView stops if no processors are enabled.
+        // If set "true", monitor shows solid orange screen if no processors enabled.
+        // If set "false", monitor shows camera view without annotations.
+        //builder.setAutoStopLiveView(false);
+
+        // Set and enable the processor.
+        builder.addProcessor(aprilTag);
+
+        // Build the Vision Portal, using the above settings.
+        visionPortal = builder.build();
+
+        // Disable or re-enable the aprilTag processor at any time.
+        visionPortal.setProcessorEnabled(aprilTag, true);
+
+    }   // end method initAprilTag()
+
+    private double[] detectTags(double[] currentTags){
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        //0 is dist to blue tower
+        //1 is angle to blue tower
+        //2 is dist to red tower
+        //3 is angle to red tower
+        //4 is artifact order
+
+        for (AprilTagDetection tag : currentDetections){
+            if (tag.id == 20){
+                currentTags[0] = tag.ftcPose.range;
+                currentTags[1] = tag.ftcPose.bearing;
+            } else if (tag.id == 24){
+                currentTags[2] = tag.ftcPose.range;
+                currentTags[3] = tag.ftcPose.bearing;
+            } else if (tag.id == 21){
+                currentTags[4] = 1;
+            } else if (tag.id == 22){
+                currentTags[4] = 2;
+            } else if (tag.id == 23){
+                currentTags[4] = 3;
+            }
+        }
+
+        return currentTags;
+
+
+
+    }
+
+    private double calculatePower(double distance){
+        double newPower;
+
+        //5th order polynomial regression
+        newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
+
+        //make sure power is between 100% and 0%
+        newPower = Math.max(newPower, 0);
+        newPower = Math.min(newPower, 100);
+
+        //round to the nearest %
+        newPower = Math.round(newPower);
+
+        return newPower;
+    }
+
+    private void turnLeft(double power){
+        frontLeftDrive.setPower(-power);
+        frontRightDrive.setPower(power);
+        backLeftDrive.setPower(-power);
+        backRightDrive.setPower(power);
+    }
+
+    private void turnRight(double power){
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(-power);
+        backLeftDrive.setPower(power);
+        backRightDrive.setPower(-power);
+    }
+
+    private void pointToTower(double angle){
+        double power = Math.min(Math.abs(angle), 20)/40;
+        if (angle < -2){
+            turnRight(power);
+        } else if (angle > 2){
+            turnLeft(power);
+        }
+    }
+
 }

@@ -52,7 +52,7 @@ public class ShowCase extends OpMode {
 
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
-    DcMotorEx Rshooter ,Lshooter;
+    DcMotorEx Rshooter, Lshooter;
     Servo ballLiftA, ballLiftB;
 
     WaverlyGamepad gp = null;
@@ -160,7 +160,7 @@ public class ShowCase extends OpMode {
         }
         if (intakeActive) {
             intake.setPower(1);
-            belt.setPower(1);
+            belt.setPower(0.5);
         } else {
             intake.setPower(0);
             belt.setPower(0);
