@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode.opmode.TeleOpMode;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -52,9 +51,8 @@ import java.util.List;
 public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
-    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake;
+    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
     DcMotorEx Rshooter ,Lshooter;
-    CRServo belt;
     Servo ballLiftA, ballLiftB;
 
     WaverlyGamepad gp = null;
@@ -68,7 +66,7 @@ public class MainRobotCode extends OpMode {
 
     //camera processing
     boolean redTeam = true;
-    boolean autoPower = false;
+    boolean autoShooting = false;
     double distToTower;
     double angleToTower;
     double recVelocity;
@@ -85,21 +83,22 @@ public class MainRobotCode extends OpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
         backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
         intake = hardwareMap.get(DcMotor.class, "Intake");
+        belt = hardwareMap.get(DcMotor.class, "Belt");
 
         //define DcMotorExs
         Rshooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
         Lshooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
 
-        //intake = hardwareMap.get(CRServo.class, "Intake");
-        belt = hardwareMap.get(CRServo.class, "Belt");
+        //define servos
         ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
         ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
 
-        //flips the direction of the necessary motors and servos
+        //flips the direction of the necessary motors
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         Rshooter.setDirection(DcMotor.Direction.REVERSE);
+        belt.setDirection(DcMotor.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -126,7 +125,7 @@ public class MainRobotCode extends OpMode {
     int velocity = 1000;
     int maxVelocity = 2000;
     int stepVelocitySize = 1;
-    int stepVelocity = 20*stepVelocitySize;
+    int stepVelocity = 20 * stepVelocitySize;
     int direction = 1;
     boolean shooting = false;
     boolean relativeDrive = true;
@@ -155,7 +154,7 @@ public class MainRobotCode extends OpMode {
             telemetry.addLine("Current shooter power: Left: " + Lshooter.getVelocity() / 20d + "% Right: " + Rshooter.getVelocity() / 20d + "%");
             telemetry.addLine("Intake Status: " + (direction == 1 ? "Intake" : "Eject"));
             telemetry.addLine("Intake Active: " + intakeActive);
-            telemetry.addLine("Auto power level active: " + autoPower);
+            telemetry.addLine("Auto power level active: " + autoShooting);
         }
         telemetry.addLine("");
         telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
@@ -222,12 +221,12 @@ public class MainRobotCode extends OpMode {
             velocity = Math.min(velocity + stepVelocity, maxVelocity);
         }
         if (gp.leftTriggerPressed){
-            autoPower = !autoPower;
+            autoShooting = !autoShooting;
         }
         if (gp.yPressed){
             shooting = !shooting;
         }
-        if (autoPower){
+        if (autoShooting){
             velocity = (int) Math.round(recVelocity);
             pointToTower(angleToTower);
         }
@@ -244,14 +243,13 @@ public class MainRobotCode extends OpMode {
         if (gp.b){
             ballLiftA.setPosition(0.3);
         } else {
-            ballLiftA.setPosition(0);
+            ballLiftA.setPosition(0.06);
         }
-
         //Lift servo b
         if (gp.x){
-            ballLiftB.setPosition(0.8);
+            ballLiftB.setPosition(0.7);
         } else {
-            ballLiftB.setPosition(0.5);
+            ballLiftB.setPosition(0.45);
         }
 
 
@@ -434,8 +432,9 @@ public class MainRobotCode extends OpMode {
         //5th order polynomial regression
         newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
 
-        //make sure power is above 0%
+        //make sure power is between 100% and 0%
         newPower = Math.max(newPower, 0);
+        newPower = Math.min(newPower, 100);
 
         //round to the nearest %
         newPower = Math.round(newPower);
@@ -458,11 +457,11 @@ public class MainRobotCode extends OpMode {
     }
 
     private void pointToTower(double angle){
-        //double power = Math.min(Math.abs(angle), 0.5);
-        if (angle < -1){
-            turnRight(0.5);
-        } else if (angle > 1){
-            turnLeft(0.5);
+        double power = Math.min(Math.abs(angle), 20)/40;
+        if (angle < -2){
+            turnRight(power);
+        } else if (angle > 2){
+            turnLeft(power);
         }
     }
 
