@@ -47,6 +47,12 @@ public class New_Auto extends LinearOpMode {
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
     }
+    public void newDriveForward(int rotations){
+        frontLeftDrive.setTargetPosition(rotations);
+        frontRightDrive.setTargetPosition(rotations);
+        backLeftDrive.setTargetPosition(rotations);
+        backRightDrive.setTargetPosition(rotations);
+    }
     public void driveBackward(double power, long duration){
         frontLeftDrive.setPower(-power);
         frontRightDrive.setPower(-power);
@@ -213,7 +219,7 @@ public class New_Auto extends LinearOpMode {
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-
+        newDriveForward(10);
 
     }
 
