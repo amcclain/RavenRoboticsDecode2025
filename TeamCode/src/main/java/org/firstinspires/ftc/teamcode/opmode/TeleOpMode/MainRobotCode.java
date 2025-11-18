@@ -174,7 +174,7 @@ public class MainRobotCode extends OpMode {
         if (tags[4] != 0)
             ballOrder = (tags[4] == 1? "GPP" : (tags[4] == 2? "PGP" : "PPG"));
 
-        recVelocity = stepVelocity*calculatePower(distToTower);
+        recVelocity = stepVelocity * calculatePower(distToTower);
 
         telemetry.addLine("Correct order of balls: " + ballOrder);
         telemetry.addLine("");
@@ -426,14 +426,17 @@ public class MainRobotCode extends OpMode {
         double newPower;
 
         //5th order polynomial regression
-        newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
+        ///newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
+
+        //just a line
+        newPower = 0.129165 * distance + 39.56322;
+
+        //manually add 2% to power
+        newPower += 2;
 
         //make sure power is between 100% and 0%
         newPower = Math.max(newPower, 0);
         newPower = Math.min(newPower, 100);
-
-        //round to the nearest %
-        newPower = Math.round(newPower);
 
         return newPower;
     }
@@ -459,6 +462,14 @@ public class MainRobotCode extends OpMode {
         } else if (angle > 2){
             turnLeft(power);
         }
+    }
+
+    private double quadCalcPower(double length, double height){
+        double newPower = length;
+
+
+
+        return newPower;
     }
 
 }

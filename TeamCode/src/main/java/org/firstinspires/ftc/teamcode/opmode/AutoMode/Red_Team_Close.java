@@ -53,7 +53,6 @@ public class Red_Team_Close extends LinearOpMode{
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
     }
-
     public void driveLeft(double power, long duration){
         frontLeftDrive.setPower(-power);
         frontRightDrive.setPower(power);
@@ -65,7 +64,6 @@ public class Red_Team_Close extends LinearOpMode{
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
     }
-
     public void driveRight(double power, long duration){
         frontLeftDrive.setPower(power);
         frontRightDrive.setPower(-power);

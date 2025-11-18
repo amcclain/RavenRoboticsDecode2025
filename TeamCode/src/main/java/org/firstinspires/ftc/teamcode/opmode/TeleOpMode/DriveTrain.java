@@ -46,7 +46,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 
-@TeleOp(name = "Only Drive Train", group = "Robot")
+@TeleOp(name = "ShowCase", group = "Robot")
 public class DriveTrain extends OpMode {
 
     //declares the motors and servos
@@ -172,7 +172,6 @@ public class DriveTrain extends OpMode {
         }
         if (shooting){
             velocity = (int) Math.round(recVelocity);
-            velocity = Math.min(velocity, 100);
             pointToTower(angleToTower);
             Rshooter.setVelocity(velocity);
             Lshooter.setVelocity(velocity);
