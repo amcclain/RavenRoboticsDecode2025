@@ -18,9 +18,8 @@ public class Red_Team_Close extends LinearOpMode{
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
     //Declare Ball Magazine Servos and motors
-    DcMotor intake;
+    DcMotor intake, belt;
     Servo liftServo;
-    CRServo belt;
 
     //declare Shooter motors and servos
     DcMotor rightShooterMotor, leftShooterMotor;
@@ -102,11 +101,11 @@ public class Red_Team_Close extends LinearOpMode{
     public void shootBall(double power){
         rightShooterMotor.setPower(power);
         leftShooterMotor.setPower(power);
-        intake.setPower(1);
+        belt.setPower(0.8);
         sleep(1250);
         liftServo.setPosition(0.3);
         sleep(1250);
-        intake.setPower(0);
+        belt.setPower(0);
         liftServo.setPosition(0);
         rightShooterMotor.setPower(0);
         leftShooterMotor.setPower(0);
@@ -141,8 +140,8 @@ public class Red_Team_Close extends LinearOpMode{
 
         //defines Ball Magazine Servos and motors
         intake = hardwareMap.get(DcMotor.class, "Intake");
-        belt = hardwareMap.get(CRServo.class, "Belt");
-        liftServo = hardwareMap.get(Servo.class, "BallLift");
+        belt = hardwareMap.get(DcMotor.class, "Belt");
+        liftServo = hardwareMap.get(Servo.class, "BallLiftA");
 
 
         //reverses motors that are on backwards
