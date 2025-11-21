@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.opmode.TeleOpMode;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -52,9 +53,9 @@ public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
-    DcMotorEx Rshooter ,Lshooter;
-    Servo ballLiftA, ballLiftB;
-
+    DcMotorEx rShooter, lShooter;
+    Servo ballLiftA;
+    CRServo ballLiftB;
     WaverlyGamepad gp = null;
 
     //camera stuff
@@ -64,13 +65,23 @@ public class MainRobotCode extends OpMode {
     //declares the Inertial Measurement Unit
     IMU imu;
 
-    //camera processing
     boolean redTeam = true;
     boolean autoShooting = false;
-    double distToTower;
-    double angleToTower;
+
+    // Set from tag detection
+    double distToRedTower;
+    double angleToRedTower;
+    double distToBlueTower;
+    double angleToBlueTower;
+    String ballOrder = "UNKNOWN";
+
+    double getDistToTower() {
+        return this.redTeam ? this.distToRedTower : this.distToBlueTower;
+    }
+    double getAngleToTower() {
+        return this.redTeam ? this.angleToRedTower : this.angleToBlueTower;
+    }
     double recVelocity;
-    String ballOrder = "unknown";
     double[] tags = new double[5];
 
 
@@ -86,18 +97,18 @@ public class MainRobotCode extends OpMode {
         belt = hardwareMap.get(DcMotor.class, "Belt");
 
         //define DcMotorExs
-        Rshooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
-        Lshooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
+        rShooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
+        lShooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
 
         //define servos
         ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
-        ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
+        ballLiftB = hardwareMap.get(CRServo.class, "BallLiftB");
 
         //flips the direction of the necessary motors
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        Rshooter.setDirection(DcMotor.Direction.REVERSE);
+        rShooter.setDirection(DcMotor.Direction.REVERSE);
         belt.setDirection(DcMotor.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
@@ -105,8 +116,8 @@ public class MainRobotCode extends OpMode {
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Rshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Lshooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         gp = new WaverlyGamepad(gamepad1);
 
@@ -131,6 +142,8 @@ public class MainRobotCode extends OpMode {
     boolean relativeDrive = true;
     boolean intakeActive = false;
     boolean showControls = false;
+    boolean aLifting = false;
+    boolean bLifting = false;
 
     @Override
     public void loop() {
@@ -151,7 +164,7 @@ public class MainRobotCode extends OpMode {
             telemetry.addLine("Info:");
             telemetry.addLine("Robot is in " + (relativeDrive ? "Field Relative" : "Robot Relative") + " driving mode");
             telemetry.addLine("Target shooter power: " + velocity / 20 + "%");
-            telemetry.addLine("Current shooter power: Left: " + Lshooter.getVelocity() / 20d + "% Right: " + Rshooter.getVelocity() / 20d + "%");
+            telemetry.addLine("Current shooter power: Left: " + lShooter.getVelocity() / 20d + "% Right: " + rShooter.getVelocity() / 20d + "%");
             telemetry.addLine("Intake Status: " + (direction == 1 ? "Intake" : "Eject"));
             telemetry.addLine("Intake Active: " + intakeActive);
             telemetry.addLine("Auto power level active: " + autoShooting);
@@ -163,22 +176,12 @@ public class MainRobotCode extends OpMode {
         //telemetryAprilTag();
 
 
-        tags = detectTags(new double[5]);
-        if (!redTeam){
-            distToTower = tags[0];
-            angleToTower = tags[1];
-        } else {
-            distToTower = tags[2];
-            angleToTower = tags[3];
-        }
-        if (tags[4] != 0)
-            ballOrder = (tags[4] == 1? "GPP" : (tags[4] == 2? "PGP" : "PPG"));
-
-        recVelocity = stepVelocity * calculatePower(distToTower);
+        detectTags();
+        recVelocity = (maxVelocity/100d) * calcRecVelocityPct(getDistToTower());
 
         telemetry.addLine("Correct order of balls: " + ballOrder);
         telemetry.addLine("");
-        telemetry.addLine("Distance to the " + (redTeam? "red" : "blue") + " tower: " + (int) distToTower);
+        telemetry.addLine("Distance to the " + (redTeam? "red" : "blue") + " tower: " + (int) getDistToTower());
         telemetry.addLine("");
         telemetry.addLine("Recommended power in order to score is: " + recVelocity / stepVelocity + "%");
 
@@ -228,28 +231,33 @@ public class MainRobotCode extends OpMode {
         }
         if (autoShooting){
             velocity = (int) Math.round(recVelocity);
-            pointToTower(angleToTower);
+            pointToTower();
         }
         if (shooting){
-            Rshooter.setVelocity(velocity);
-            Lshooter.setVelocity(velocity);
+            rShooter.setVelocity(velocity);
+            lShooter.setVelocity(velocity);
         } else {
-            Rshooter.setVelocity(0);
-            Lshooter.setVelocity(0);
+            rShooter.setVelocity(0);
+            lShooter.setVelocity(0);
         }
 
 
-        //Lift servo A
-        if (gp.b){
+        //Lift servos
+        if (gp.b)
+            aLifting = true;
+        if (gp.x)
+            bLifting = true;
+        if (aLifting){
             ballLiftA.setPosition(0.3);
+            if (ballLiftA.getPosition() >= 0.3)
+                aLifting = false;
         } else {
             ballLiftA.setPosition(0.06);
         }
-        //Lift servo b
-        if (gp.x){
-            ballLiftB.setPosition(0.7);
+        if (bLifting){
+            ballLiftB.setPower(0.5);
         } else {
-            ballLiftB.setPosition(0.45);
+            ballLiftB.setPower(0);
         }
 
 
@@ -392,53 +400,42 @@ public class MainRobotCode extends OpMode {
 
     }   // end method telemetryAprilTag()
 
-    private double[] detectTags(double[] currentTags){
+    private void detectTags() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        //0 is dist to blue tower
-        //1 is angle to blue tower
-        //2 is dist to red tower
-        //3 is angle to red tower
-        //4 is artifact order
-
-        for (AprilTagDetection tag : currentDetections){
-            if (tag.id == 20){
-                currentTags[0] = tag.ftcPose.range;
-                currentTags[1] = tag.ftcPose.bearing;
-            } else if (tag.id == 24){
-                currentTags[2] = tag.ftcPose.range;
-                currentTags[3] = tag.ftcPose.bearing;
-            } else if (tag.id == 21){
-                currentTags[4] = 1;
-            } else if (tag.id == 22){
-                currentTags[4] = 2;
-            } else if (tag.id == 23){
-                currentTags[4] = 3;
+        for (AprilTagDetection tag : currentDetections) {
+            if (tag.id == 20) {
+                distToBlueTower = tag.ftcPose.range;
+                angleToBlueTower = tag.ftcPose.bearing;
+            } else if (tag.id == 24) {
+                distToRedTower = tag.ftcPose.range;
+                angleToRedTower = tag.ftcPose.bearing;
+            } else if (tag.id == 21) {
+                ballOrder = "GPP";
+            } else if (tag.id == 22) {
+                ballOrder = "PGP";
+            } else if (tag.id == 23) {
+                ballOrder = "PPG";
             }
         }
-
-        return currentTags;
-
-
-
     }
 
-    private double calculatePower(double distance){
-        double newPower;
+    private double calcRecVelocityPct(double distance){
+        double ret;
 
         //5th order polynomial regression
-        ///newPower = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
+        ///ret = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
 
         //just a line
-        newPower = 0.129165 * distance + 39.56322;
+        ret = 0.129165 * distance + 39.56322;
 
         //manually add 2% to power
-        newPower += 2;
+        ret += 2;
 
         //make sure power is between 100% and 0%
-        newPower = Math.max(newPower, 0);
-        newPower = Math.min(newPower, 100);
+        ret = Math.max(ret, 0);
+        ret = Math.min(ret, 100);
 
-        return newPower;
+        return ret;
     }
 
     private void turnLeft(double power){
@@ -455,8 +452,10 @@ public class MainRobotCode extends OpMode {
         backRightDrive.setPower(-power);
     }
 
-    private void pointToTower(double angle){
-        double power = Math.min(Math.abs(angle), 20)/40;
+    private void pointToTower(){
+        double angle = getAngleToTower(),
+            power = Math.min(Math.abs(angle)/40, 0.5);
+
         if (angle < -2){
             turnRight(power);
         } else if (angle > 2){
