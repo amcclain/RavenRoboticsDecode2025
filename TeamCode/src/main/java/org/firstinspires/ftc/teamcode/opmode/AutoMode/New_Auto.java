@@ -103,7 +103,6 @@ public class New_Auto extends LinearOpMode{
 
             telemetry.addLine("adjustable time is: " + adjustableTime);
             telemetry.addLine("adjustable power is: " + adjustablePower);
-            telemetry.addLine("\nCamera is " + (aprilTag != null? "working" : "not working"));
             telemetry.update();
         }
 
@@ -121,16 +120,13 @@ public class New_Auto extends LinearOpMode{
 
         Wait(100);
 
+        shootBall(0.4);
+
+        shootBall(0.4);
+
+        shootBall(0.4);
+
         readTeam();
-
-        telemetry.addLine("Team detected, robot is on " + (onRedTeam? "red" : "blue") + " team.");
-        telemetry.update();
-
-        shootBall(0.4);
-
-        shootBall(0.4);
-
-        shootBall(0.4);
 
         turn(-0.5, 300);
 
@@ -138,18 +134,10 @@ public class New_Auto extends LinearOpMode{
 
         readOrder();
 
-        telemetry.addLine("adjustable time is: " + adjustableTime);
-        telemetry.addLine("adjustable power is: " + adjustablePower);
-        telemetry.addLine("\nCamera is " + (aprilTag != null? "working" : "not working"));
-        telemetry.addLine("\nTeam detected, robot is on " + (onRedTeam? "red" : "blue") + " team.");
-        telemetry.addLine("Ball order " + (ballOrder != null? "detected, correct order is " + ballOrder : "not detected, correct order is unknown"));
-        telemetry.update();
-
         turn(-0.5, 300);
 
         driveBackward(0.5, 650);
 
-        Wait(1000);
 
     }
 
@@ -260,40 +248,6 @@ public class New_Auto extends LinearOpMode{
     public void stopIntake(){
         intake.setPower(0);
         belt.setPower(0);
-    }
-
-    public void shootBalls(double power){
-        //spin up motors
-        rightShooterMotor.setPower(power);
-        leftShooterMotor.setPower(power);
-        sleep(250);
-
-        //shoot ball
-        liftServo.setPosition(0.3);
-        sleep(100);
-        liftServo.setPosition(0);
-
-        //start belt
-        belt.setPower(0.8);
-        sleep(100);
-
-        //shoot ball
-        liftServo.setPosition(0.3);
-        sleep(100);
-        liftServo.setPosition(0);
-        sleep(100);
-
-        //shoot ball
-        liftServo.setPosition(0.3);
-        sleep(100);
-        liftServo.setPosition(0);
-
-        //stop belt
-        belt.setPower(0);
-
-        //spin down motors
-        rightShooterMotor.setPower(0);
-        leftShooterMotor.setPower(0);
     }
 
 
