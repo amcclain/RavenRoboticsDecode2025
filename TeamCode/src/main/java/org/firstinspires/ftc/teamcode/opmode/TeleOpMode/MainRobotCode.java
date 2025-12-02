@@ -105,11 +105,8 @@ public class MainRobotCode extends OpMode {
         ballLiftB = hardwareMap.get(CRServo.class, "BallLiftB");
 
         //flips the direction of the necessary motors
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
         rShooter.setDirection(DcMotor.Direction.REVERSE);
-        belt.setDirection(DcMotor.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -184,6 +181,8 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Distance to the " + (redTeam? "red" : "blue") + " tower: " + (int) getDistToTower());
         telemetry.addLine("");
         telemetry.addLine("Recommended power in order to score is: " + recVelocity / stepVelocity + "%");
+        telemetry.addLine("");
+        telemetry.addLine("Angle to tower is: " + getAngleToTower());
 
 
         gp.readButtons();
@@ -193,6 +192,7 @@ public class MainRobotCode extends OpMode {
         if (gp.dpadDownPressed){
             imu.resetYaw();
         }
+
 
         //show or hide controls
         if (gp.dpadLeftPressed){
@@ -266,7 +266,7 @@ public class MainRobotCode extends OpMode {
             relativeDrive = !relativeDrive;
         }
         if (relativeDrive) {
-            drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+            drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
         } else {
             driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
@@ -453,22 +453,14 @@ public class MainRobotCode extends OpMode {
     }
 
     private void pointToTower(){
-        double angle = getAngleToTower(),
-            power = Math.min(Math.abs(angle)/40, 0.5);
+        double angle = getAngleToTower();
+        double power = Math.min(Math.abs(angle)/40, 0.5);
 
         if (angle < -2){
-            turnRight(power);
-        } else if (angle > 2){
             turnLeft(power);
+        } else if (angle > 2){
+            turnRight(power);
         }
-    }
-
-    private double quadCalcPower(double length, double height){
-        double newPower = length;
-
-
-
-        return newPower;
     }
 
 }

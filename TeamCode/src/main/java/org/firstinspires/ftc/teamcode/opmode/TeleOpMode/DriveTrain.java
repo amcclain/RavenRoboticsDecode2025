@@ -92,9 +92,7 @@ public class DriveTrain extends OpMode {
         ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
 
         //flips the direction of the necessary motors
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         Rshooter.setDirection(DcMotor.Direction.REVERSE);
         belt.setDirection(DcMotor.Direction.REVERSE);
 
@@ -152,6 +150,7 @@ public class DriveTrain extends OpMode {
 
 
         gp.readButtons();
+        /*
 
         //intake
         if (gp.aPressed){
@@ -196,7 +195,12 @@ public class DriveTrain extends OpMode {
         } else {
             driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
+        */
 
+        frontLeftDrive.setPower(0.2);
+        frontRightDrive.setPower(0.2);
+        backLeftDrive.setPower(0.2);
+        backRightDrive.setPower(0.2);
 
     }
 
