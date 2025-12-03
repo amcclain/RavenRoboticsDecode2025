@@ -102,7 +102,6 @@ public class MainRobotCode extends OpMode {
 
         //define servos
         ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
-        ballLiftB = hardwareMap.get(CRServo.class, "BallLiftB");
 
         //flips the direction of the necessary motors
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -245,19 +244,12 @@ public class MainRobotCode extends OpMode {
         //Lift servos
         if (gp.b)
             aLifting = true;
-        if (gp.x)
-            bLifting = true;
         if (aLifting){
             ballLiftA.setPosition(0.3);
             if (ballLiftA.getPosition() >= 0.3)
                 aLifting = false;
         } else {
             ballLiftA.setPosition(0.06);
-        }
-        if (bLifting){
-            ballLiftB.setPower(0.5);
-        } else {
-            ballLiftB.setPower(0);
         }
 
 
