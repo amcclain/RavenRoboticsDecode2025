@@ -112,7 +112,7 @@ public class New_Auto extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-        //belt.setPower(0.8);
+        spinIntake();
 
         Wait(500);
 
@@ -120,11 +120,7 @@ public class New_Auto extends LinearOpMode{
 
         Wait(100);
 
-        shootBall(0.4);
-
-        shootBall(0.4);
-
-        shootBall(0.4);
+        shootBalls(0.4);
 
         readTeam();
 
@@ -250,6 +246,21 @@ public class New_Auto extends LinearOpMode{
         belt.setPower(0);
     }
 
+    public void shootBalls(double power){
+        //spin up motor
+        rightShooterMotor.setPower(power);
+        leftShooterMotor.setPower(power);
+        sleep(250);
+
+        //shoot ball
+        liftServo.setPosition(0.3);
+        sleep(100);
+        liftServo.setPosition(0.3);
+
+        //turn on belt
+        belt.setPower(0.8);
+
+    }
 
     //camera functions
     private void initCamera() {
