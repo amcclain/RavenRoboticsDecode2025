@@ -259,6 +259,25 @@ public class New_Auto extends LinearOpMode{
 
         //turn on belt
         belt.setPower(0.8);
+        sleep(100);
+
+        //shoot ball
+        liftServo.setPosition(0.3);
+        sleep(100);
+        liftServo.setPosition(0.3);
+        sleep(100);
+
+        //shoot ball
+        liftServo.setPosition(0.3);
+        sleep(100);
+        liftServo.setPosition(0.3);
+
+        //turn off belt
+        belt.setPower(0.8);
+
+        //spin down motor
+        rightShooterMotor.setPower(0);
+        leftShooterMotor.setPower(0);
 
     }
 
