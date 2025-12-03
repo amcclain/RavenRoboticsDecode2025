@@ -35,10 +35,10 @@ public class New_Auto extends LinearOpMode{
     double adjustablePower = 0.4;
 
     private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
 
     boolean onRedTeam;
     String ballOrder;
+    double countsPerInch = 29.8;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -130,7 +130,7 @@ public class New_Auto extends LinearOpMode{
 
         readOrder();
 
-        turn(-0.5, 300);
+        turn(0.5, 300);
 
         driveBackward(0.5, 650);
 
@@ -149,6 +149,74 @@ public class New_Auto extends LinearOpMode{
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
+    }
+    public void drive(String direction, double power, double distance){
+        double targetCounts = distance * countsPerInch,
+                frontLeftTarg, frontRightTarg, backLeftTarg, backRightTarg;
+
+        switch (direction) {
+            case "forward":
+                frontLeftTarg = frontLeftDrive.getCurrentPosition() + targetCounts;
+                frontRightTarg = frontRightDrive.getCurrentPosition() + targetCounts;
+                backLeftTarg = backLeftDrive.getCurrentPosition() + targetCounts;
+                backRightTarg = backRightDrive.getCurrentPosition() + targetCounts;
+            break;
+            case "backward":
+                frontLeftTarg = frontLeftDrive.getCurrentPosition() - targetCounts;
+                frontRightTarg = frontRightDrive.getCurrentPosition() - targetCounts;
+                backLeftTarg = backLeftDrive.getCurrentPosition() - targetCounts;
+                backRightTarg = backRightDrive.getCurrentPosition() - targetCounts;
+            break;
+            case "right":
+                frontLeftTarg = frontLeftDrive.getCurrentPosition() + targetCounts;
+                frontRightTarg = frontRightDrive.getCurrentPosition() - targetCounts;
+                backLeftTarg = backLeftDrive.getCurrentPosition() - targetCounts;
+                backRightTarg = backRightDrive.getCurrentPosition() + targetCounts;
+            break;
+            case "left":
+                frontLeftTarg = frontLeftDrive.getCurrentPosition() - targetCounts;
+                frontRightTarg = frontRightDrive.getCurrentPosition() + targetCounts;
+                backLeftTarg = backLeftDrive.getCurrentPosition() + targetCounts;
+                backRightTarg = backRightDrive.getCurrentPosition() - targetCounts;
+            break;
+            default:
+                frontLeftTarg = frontLeftDrive.getCurrentPosition();
+                frontRightTarg = frontRightDrive.getCurrentPosition();
+                backLeftTarg = backLeftDrive.getCurrentPosition();
+                backRightTarg = backRightDrive.getCurrentPosition();
+            break;
+        }
+
+        frontLeftDrive.setTargetPosition((int) frontLeftTarg);
+        frontRightDrive.setTargetPosition((int) frontLeftTarg);
+        backLeftDrive.setTargetPosition((int) backLeftTarg);
+        backRightDrive.setTargetPosition((int) backRightTarg);
+
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(power);
+        backLeftDrive.setPower(power);
+        backRightDrive.setPower(power);
+
+        while (true){
+            double frontLeftDiff = Math.abs(frontLeftTarg - frontLeftDrive.getCurrentPosition()),
+                   frontRightDiff = Math.abs(frontRightTarg - frontRightDrive.getCurrentPosition()),
+                   backLeftDiff = Math.abs(frontRightTarg - backLeftDrive.getCurrentPosition()),
+                   backRightDiff = Math.abs(frontRightTarg - backRightDrive.getCurrentPosition());
+
+            if (frontLeftDiff + frontRightDiff + backLeftDiff + backRightDiff < 4)
+                break;
+        }
+
+        frontRightDrive.setPower(0);
+        frontLeftDrive.setPower(0);
+        backRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+
     }
     public void driveBackward(double power, long duration){
         frontLeftDrive.setPower(-power);
@@ -300,7 +368,7 @@ public class New_Auto extends LinearOpMode{
         builder.addProcessor(aprilTag);
 
         // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
+        VisionPortal visionPortal = builder.build();
 
         // Disable or re-enable the aprilTag processor at any time.
         visionPortal.setProcessorEnabled(aprilTag, true);
