@@ -7,6 +7,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -29,37 +30,28 @@ public class Testing_Suit extends LinearOpMode{
     Servo liftServo;
 
     //declare Shooter motors and servos
-    DcMotor rightShooterMotor, leftShooterMotor;
+    DcMotorEx rightShooterMotor, leftShooterMotor;
 
     WaverlyGamepad wgp;
 
     double adjustableInches = 24;
     double adjustableDegrees = 45;
-
-    private AprilTagProcessor aprilTag;
     IMU imu;
-
-    boolean onRedTeam;
-    String ballOrder;
     double countsPerInch = 29.8;
     double countsPerDegree = 8;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode(){
         //define motors
         defineMotors();
 
         //init IMU
         initIMU();
 
-        //init camera
-        initCamera();
-
-        //initialize the gamepad
+        //change values before start
         if (wgp == null){
             wgp = new WaverlyGamepad(gamepad1);
         }
-
         while (!isStarted()){
             wgp.readButtons();
 
@@ -108,12 +100,12 @@ public class Testing_Suit extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-        //drive("forward", 0.5, 24);
+        ///drive("forward", 0.5, 24);
 
         turn("right", 0.5, 90);
         Wait(5000);
 
-        //drive("forward", 0.5, 24);
+        ///drive("forward", 0.5, 24);
 
     }
 
@@ -207,8 +199,8 @@ public class Testing_Suit extends LinearOpMode{
     //Prototype Shooter functions
     public void shootBalls(double power){
         //spin up motor
-        rightShooterMotor.setPower(power);
-        leftShooterMotor.setPower(power);
+        rightShooterMotor.setVelocity(2000*power);
+        leftShooterMotor.setVelocity(2000*power);
         sleep(250);
 
         //shoot ball
@@ -241,29 +233,6 @@ public class Testing_Suit extends LinearOpMode{
     }
 
 
-    //Camera functions
-    private void readTeam(){
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        for (AprilTagDetection tag : currentDetections) {
-            if (tag.id == 20)
-                onRedTeam = false;
-            else if (tag.id == 24)
-                onRedTeam = true;
-        }
-    }
-    private void readOrder(){
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        for (AprilTagDetection tag : currentDetections) {
-            if (tag.id == 21)
-                ballOrder = "GPP";
-            else if (tag.id == 22)
-                ballOrder = "PGP";
-            else if (tag.id == 23)
-                ballOrder = "PPG";
-        }
-    }
-
-
     //Functions to make code look better
     public void Wait(long duration){
         //just to make code more readable
@@ -278,20 +247,11 @@ public class Testing_Suit extends LinearOpMode{
         backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
         backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
 
-        //defines Shooter motors
-        rightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
-        leftShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
-
-        //defines Ball Magazine Servos and motors
-        intake = hardwareMap.get(DcMotor.class, "Intake");
-        belt = hardwareMap.get(DcMotor.class, "Belt");
-        liftServo = hardwareMap.get(Servo.class, "BallLiftA");
-
-        //reverses motors that are on backwards
-        backLeftDrive.setDirection(REVERSE);
+        //reverses DriveBase motors that are on backwards
         frontLeftDrive.setDirection(REVERSE);
         frontRightDrive.setDirection(REVERSE);
-        rightShooterMotor.setDirection(REVERSE);
+        backLeftDrive.setDirection(REVERSE);
+        ///backRightDrive.setDirection(REVERSE);
 
         //tells DriveBase motors to run using encoder to me more accurate
         frontLeftDrive.setMode(RUN_USING_ENCODER);
@@ -299,33 +259,21 @@ public class Testing_Suit extends LinearOpMode{
         backLeftDrive.setMode(RUN_USING_ENCODER);
         backRightDrive.setMode(RUN_USING_ENCODER);
 
+        //defines Shooter motors
+        rightShooterMotor = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
+        leftShooterMotor = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
+
+        //defines Ball Magazine Servos and motors
+        intake = hardwareMap.get(DcMotor.class, "Intake");
+        belt = hardwareMap.get(DcMotor.class, "Belt");
+        liftServo = hardwareMap.get(Servo.class, "BallLiftA");
+
+        //reverses shooter motors that are on backwards
+        rightShooterMotor.setDirection(REVERSE);
+
         //tells Shooter motors to run using encoder to me more accurate
         rightShooterMotor.setMode(RUN_USING_ENCODER);
         leftShooterMotor.setMode(RUN_USING_ENCODER);
-    }
-    private void initCamera() {
-
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder().build();
-
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the webcam
-        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableLiveView(true);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        VisionPortal visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        visionPortal.setProcessorEnabled(aprilTag, true);
-
     }
     public void initIMU(){
         imu = hardwareMap.get(IMU.class, "imu");
