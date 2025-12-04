@@ -43,7 +43,7 @@ public class New_Auto extends LinearOpMode{
     boolean onRedTeam;
     String ballOrder;
     double countsPerInch = 29.8;
-    double countsPerDegree = 29.8;
+    double countsPerDegree = 7.4;
 
     @Override
     public void runOpMode() throws InterruptedException {

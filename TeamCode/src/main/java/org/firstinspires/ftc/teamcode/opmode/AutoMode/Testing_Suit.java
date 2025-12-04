@@ -11,13 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-
-import java.util.List;
 
 @Autonomous(name = "Testing Suit", group = "robot")
 public class Testing_Suit extends LinearOpMode{
@@ -38,7 +32,7 @@ public class Testing_Suit extends LinearOpMode{
     double adjustableDegrees = 45;
     IMU imu;
     double countsPerInch = 29.8;
-    double countsPerDegree = 8;
+    double countsPerDegree = 7.4;
 
     @Override
     public void runOpMode(){
@@ -100,18 +94,26 @@ public class Testing_Suit extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-        ///drive("forward", 0.5, 24);
+        drive("forward", 0.5, 24);
+        Wait(3000);
 
         turn("right", 0.5, 90);
-        Wait(5000);
+        Wait(3000);
 
-        ///drive("forward", 0.5, 24);
+        drive("forward", 0.5, 24);
+        Wait(3000);
 
     }
 
 
     //Prototype DriveBase functions
     public void drive(String direction, double power, double inches){
+
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+
         double targetCounts = inches * countsPerInch,
                 flTarg = targetCounts,
                 frTarg = targetCounts,
@@ -160,6 +162,12 @@ public class Testing_Suit extends LinearOpMode{
 
     }
     public void turn(String direction, double power, double degrees){
+
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+
         double targetCounts = degrees * countsPerDegree,
                 flTarg = targetCounts,
                 frTarg = -targetCounts,
