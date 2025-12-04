@@ -31,14 +31,15 @@ public class New_Auto extends LinearOpMode{
 
     WaverlyGamepad wgp;
 
-    long adjustableTime = 1300;
-    double adjustablePower = 0.4;
+    double adjustableInches = 24;
+    double adjustableDegrees = 90;
 
     private AprilTagProcessor aprilTag;
 
     boolean onRedTeam;
     String ballOrder;
     double countsPerInch = 29.8;
+    double countsPerDegree = 29.8;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -83,26 +84,45 @@ public class New_Auto extends LinearOpMode{
             wgp = new WaverlyGamepad(gamepad1);
         }
 
-        //
         while (!isStarted()){
             wgp.readButtons();
 
-            //change time
-            if (wgp.dpadDownPressed) {
-                adjustableTime = Math.max(adjustableTime - 100, 0);
-            } else if (wgp.dpadUpPressed){
-                adjustableTime += 100;
+            //change inches by 6
+            if (wgp.dpadUpPressed){
+                adjustableInches++;
+            } else if (wgp.dpadDownPressed){
+                adjustableInches--;
             }
 
-            //change power
+            //change inches by 1
             if (wgp.dpadLeftPressed) {
-                adjustablePower = Math.max(adjustablePower - 0.05, 0);
+                adjustableInches++;
             } else if (wgp.dpadRightPressed){
-                adjustablePower += 0.05;
+                adjustableInches--;
             }
 
-            telemetry.addLine("adjustable time is: " + adjustableTime);
-            telemetry.addLine("adjustable power is: " + adjustablePower);
+            //change degrees by 15
+            if (wgp.yPressed) {
+                adjustableDegrees += 15;
+            } else if (wgp.aPressed){
+                adjustableDegrees -= 15;
+            }
+
+            //change degrees by 1
+            if (wgp.xPressed) {
+                adjustableDegrees++;
+            } else if (wgp.bPressed){
+                adjustableDegrees--;
+            }
+
+            telemetry.addLine("Dpad is counts per inch");
+            telemetry.addLine("Shape buttons is counts per degree");
+            telemetry.addLine("");
+            telemetry.addLine("Up and down is regular tuning");
+            telemetry.addLine("Left and right is fine tuning");
+            telemetry.addLine("");
+            telemetry.addLine("counts per inch is: " + adjustableInches);
+            telemetry.addLine(" counts per degree is: " + adjustableDegrees);
             telemetry.update();
         }
 
@@ -112,7 +132,7 @@ public class New_Auto extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-        spinIntake();
+        /*spinIntake();
 
         Wait(500);
 
@@ -132,7 +152,11 @@ public class New_Auto extends LinearOpMode{
 
         turn(0.5, 300);
 
-        driveBackward(0.5, 650);
+        driveBackward(0.5, 650);*/
+
+        drive("forward", 0.5, 24);
+
+        turn("right", 0.5, 90);
 
 
     }
@@ -149,74 +173,6 @@ public class New_Auto extends LinearOpMode{
         frontRightDrive.setPower(0);
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
-    }
-    public void drive(String direction, double power, double distance){
-        double targetCounts = distance * countsPerInch,
-                frontLeftTarg, frontRightTarg, backLeftTarg, backRightTarg;
-
-        switch (direction) {
-            case "forward":
-                frontLeftTarg = frontLeftDrive.getCurrentPosition() + targetCounts;
-                frontRightTarg = frontRightDrive.getCurrentPosition() + targetCounts;
-                backLeftTarg = backLeftDrive.getCurrentPosition() + targetCounts;
-                backRightTarg = backRightDrive.getCurrentPosition() + targetCounts;
-            break;
-            case "backward":
-                frontLeftTarg = frontLeftDrive.getCurrentPosition() - targetCounts;
-                frontRightTarg = frontRightDrive.getCurrentPosition() - targetCounts;
-                backLeftTarg = backLeftDrive.getCurrentPosition() - targetCounts;
-                backRightTarg = backRightDrive.getCurrentPosition() - targetCounts;
-            break;
-            case "right":
-                frontLeftTarg = frontLeftDrive.getCurrentPosition() + targetCounts;
-                frontRightTarg = frontRightDrive.getCurrentPosition() - targetCounts;
-                backLeftTarg = backLeftDrive.getCurrentPosition() - targetCounts;
-                backRightTarg = backRightDrive.getCurrentPosition() + targetCounts;
-            break;
-            case "left":
-                frontLeftTarg = frontLeftDrive.getCurrentPosition() - targetCounts;
-                frontRightTarg = frontRightDrive.getCurrentPosition() + targetCounts;
-                backLeftTarg = backLeftDrive.getCurrentPosition() + targetCounts;
-                backRightTarg = backRightDrive.getCurrentPosition() - targetCounts;
-            break;
-            default:
-                frontLeftTarg = frontLeftDrive.getCurrentPosition();
-                frontRightTarg = frontRightDrive.getCurrentPosition();
-                backLeftTarg = backLeftDrive.getCurrentPosition();
-                backRightTarg = backRightDrive.getCurrentPosition();
-            break;
-        }
-
-        frontLeftDrive.setTargetPosition((int) frontLeftTarg);
-        frontRightDrive.setTargetPosition((int) frontLeftTarg);
-        backLeftDrive.setTargetPosition((int) backLeftTarg);
-        backRightDrive.setTargetPosition((int) backRightTarg);
-
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        frontLeftDrive.setPower(power);
-        frontRightDrive.setPower(power);
-        backLeftDrive.setPower(power);
-        backRightDrive.setPower(power);
-
-        while (true){
-            double frontLeftDiff = Math.abs(frontLeftTarg - frontLeftDrive.getCurrentPosition()),
-                   frontRightDiff = Math.abs(frontRightTarg - frontRightDrive.getCurrentPosition()),
-                   backLeftDiff = Math.abs(frontRightTarg - backLeftDrive.getCurrentPosition()),
-                   backRightDiff = Math.abs(frontRightTarg - backRightDrive.getCurrentPosition());
-
-            if (frontLeftDiff + frontRightDiff + backLeftDiff + backRightDiff < 4)
-                break;
-        }
-
-        frontRightDrive.setPower(0);
-        frontLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-
     }
     public void driveBackward(double power, long duration){
         frontLeftDrive.setPower(-power);
@@ -274,20 +230,89 @@ public class New_Auto extends LinearOpMode{
         backRightDrive.setPower(0);
     }
 
-    //Non-team specific DriveBase functions
-    public void strafe(double power, long duration){
-        if (onRedTeam) {
-            driveRight(power, duration);
-        } else {
-            driveLeft(power, duration);
+    //New DriveBase functions
+    public void drive(String direction, double power, double inches){
+        double targetCounts = inches * countsPerInch,
+                flTarg = targetCounts,
+                frTarg = targetCounts,
+                blTarg = targetCounts,
+                brTarg = targetCounts;
+
+        switch (direction) {
+            case "back":
+                flTarg *= -1;
+                frTarg *= -1;
+                blTarg *= -1;
+                brTarg *= -1;
+                break;
+            case "left":
+                flTarg *= -1;
+                brTarg *= -1;
+                break;
+            case "right":
+                frTarg *= -1;
+                blTarg *= -1;
+                break;
+            default:
+                //do nothing
+                break;
         }
+
+        frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeftDrive.setTargetPosition((int) flTarg);
+        frontRightDrive.setTargetPosition((int) frTarg);
+        backLeftDrive.setTargetPosition((int) blTarg);
+        backRightDrive.setTargetPosition((int) brTarg);
+
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(power);
+        backRightDrive.setPower(power);
+        backLeftDrive.setPower(power);
+
     }
-    public void turn(double power, long duration){
-        if (onRedTeam) {
-            turnRight(power, duration);
-        } else {
-            turnLeft(power, duration);
+    public void turn(String direction, double power, double degrees){
+        double targetCounts = degrees * countsPerDegree,
+                flTarg = targetCounts,
+                frTarg = -targetCounts,
+                blTarg = targetCounts,
+                brTarg = -targetCounts;
+
+        if (direction.equals("left")){
+            flTarg *= -1;
+            frTarg *= -1;
+            blTarg *= -1;
+            brTarg *= -1;
         }
+
+        frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeftDrive.setTargetPosition((int) flTarg);
+        frontRightDrive.setTargetPosition((int) frTarg);
+        backLeftDrive.setTargetPosition((int) blTarg);
+        backRightDrive.setTargetPosition((int) brTarg);
+
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(power);
+        backRightDrive.setPower(power);
+        backLeftDrive.setPower(power);
+
     }
 
 
