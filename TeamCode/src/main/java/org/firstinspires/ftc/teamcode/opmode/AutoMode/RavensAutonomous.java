@@ -3,14 +3,15 @@ package org.firstinspires.ftc.teamcode.opmode.AutoMode;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 
+
 @Autonomous(name = "Ravens Autonomous", group = "robot")
+@Disabled
 public class RavensAutonomous extends OpMode {
 
     // Settings
