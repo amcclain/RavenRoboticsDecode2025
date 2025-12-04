@@ -3,9 +3,11 @@ package org.firstinspires.ftc.teamcode.opmode.AutoMode;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -36,6 +38,8 @@ public class New_Auto extends LinearOpMode{
 
     private AprilTagProcessor aprilTag;
 
+    IMU imu;
+
     boolean onRedTeam;
     String ballOrder;
     double countsPerInch = 29.8;
@@ -43,40 +47,13 @@ public class New_Auto extends LinearOpMode{
 
     @Override
     public void runOpMode() throws InterruptedException {
-        //define DriveBase motors
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
-        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        //define motors
+        defineMotors();
 
-        //defines Shooter motors
-        rightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
-        leftShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+        //init IMU
+        initIMU();
 
-        //defines Ball Magazine Servos and motors
-        intake = hardwareMap.get(DcMotor.class, "Intake");
-        belt = hardwareMap.get(DcMotor.class, "Belt");
-        liftServo = hardwareMap.get(Servo.class, "BallLiftA");
-
-
-        //reverses motors that are on backwards
-        backLeftDrive.setDirection(REVERSE);
-        frontLeftDrive.setDirection(REVERSE);
-        frontRightDrive.setDirection(REVERSE);
-        rightShooterMotor.setDirection(REVERSE);
-
-
-        //tells DriveBase motors to run using encoder to me more accurate
-        frontLeftDrive.setMode(RUN_USING_ENCODER);
-        frontRightDrive.setMode(RUN_USING_ENCODER);
-        backLeftDrive.setMode(RUN_USING_ENCODER);
-        backRightDrive.setMode(RUN_USING_ENCODER);
-
-        //tells Shooter motors to run using encoder to me more accurate
-        rightShooterMotor.setMode(RUN_USING_ENCODER);
-        leftShooterMotor.setMode(RUN_USING_ENCODER);
-
-        //initialize the camera
+        //init camera
         initCamera();
 
         //initialize the gamepad
@@ -84,6 +61,7 @@ public class New_Auto extends LinearOpMode{
             wgp = new WaverlyGamepad(gamepad1);
         }
 
+        //adjust values before start
         while (!isStarted()){
             wgp.readButtons();
 
@@ -157,6 +135,8 @@ public class New_Auto extends LinearOpMode{
         drive("forward", 0.5, 24);
 
         turn("right", 0.5, 90);
+
+        drive("forward", 0.5, 24);
 
 
     }
@@ -375,30 +355,6 @@ public class New_Auto extends LinearOpMode{
     }
 
     //camera functions
-    private void initCamera() {
-
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder().build();
-
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the webcam
-        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableLiveView(true);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        VisionPortal visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        visionPortal.setProcessorEnabled(aprilTag, true);
-
-    }
     private void readTeam(){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection tag : currentDetections) {
@@ -425,5 +381,73 @@ public class New_Auto extends LinearOpMode{
     public void Wait(long duration){
         //just to make code more readable
         sleep(duration);
+    }
+
+    //init functions
+    public void defineMotors(){
+        //define DriveBase motors
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
+        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+
+        //defines Shooter motors
+        rightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
+        leftShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+
+        //defines Ball Magazine Servos and motors
+        intake = hardwareMap.get(DcMotor.class, "Intake");
+        belt = hardwareMap.get(DcMotor.class, "Belt");
+        liftServo = hardwareMap.get(Servo.class, "BallLiftA");
+
+        //reverses motors that are on backwards
+        backLeftDrive.setDirection(REVERSE);
+        frontLeftDrive.setDirection(REVERSE);
+        frontRightDrive.setDirection(REVERSE);
+        rightShooterMotor.setDirection(REVERSE);
+
+        //tells DriveBase motors to run using encoder to me more accurate
+        frontLeftDrive.setMode(RUN_USING_ENCODER);
+        frontRightDrive.setMode(RUN_USING_ENCODER);
+        backLeftDrive.setMode(RUN_USING_ENCODER);
+        backRightDrive.setMode(RUN_USING_ENCODER);
+
+        //tells Shooter motors to run using encoder to me more accurate
+        rightShooterMotor.setMode(RUN_USING_ENCODER);
+        leftShooterMotor.setMode(RUN_USING_ENCODER);
+    }
+    private void initCamera() {
+
+        // Create the AprilTag processor.
+        aprilTag = new AprilTagProcessor.Builder().build();
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the webcam
+        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+
+        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+        builder.enableLiveView(true);
+
+        // Set and enable the processor.
+        builder.addProcessor(aprilTag);
+
+        // Build the Vision Portal, using the above settings.
+        VisionPortal visionPortal = builder.build();
+
+        // Disable or re-enable the aprilTag processor at any time.
+        visionPortal.setProcessorEnabled(aprilTag, true);
+
+    }
+    public void initIMU(){
+        imu.initialize(
+                new IMU.Parameters(
+                        new RevHubOrientationOnRobot(
+                                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                                RevHubOrientationOnRobot.UsbFacingDirection.UP
+                        )
+                )
+        );
     }
 }
