@@ -121,6 +121,10 @@ public class New_Auto extends LinearOpMode{
 
         Wait(3000);
 
+        turnTo(15);
+
+        readTeam();
+
         shootBalls();
 
         turnTo(-15);
@@ -131,93 +135,23 @@ public class New_Auto extends LinearOpMode{
 
         switch (ballOrder){
             case "GPP":
-
-                    move(0, -2.5);
-
+                drive("backward", 0.5, 60);
+                Wait(2500);
                 break;
             case "PGP":
-
-                    move(0, -1.5);
-
+                drive("backward", 0.5, 36);
+                Wait(1500);
                 break;
             case "PPG":
-
-                move(0, -0.5);
-
+                drive("backward", 0.5, 12);
+                Wait(500);
                 break;
         }
 
-    }
-
-    public void move(double tilesX, double tilesY){
-
-        //convert x and y from tiles to inches
-        tilesX = tilesToInches(tilesX);
-        tilesY = tilesToInches(tilesY);
-
-        double
-                //calculate target counts for x
-                xTargetCounts = tilesX * countsPerInch,
-
-                //calculate target counts for y
-                yTargetCounts = tilesY * countsPerInch,
-
-                //calculate final target counts for motors
-                flTarg = yTargetCounts + xTargetCounts,
-                frTarg = yTargetCounts - xTargetCounts,
-                blTarg = yTargetCounts - xTargetCounts,
-                brTarg = yTargetCounts + xTargetCounts;
-
-        //run the motors to the calculated target positions
-        runMotorsToPos(flTarg, frTarg, blTarg, brTarg, 0.5);
+        pickUpBalls();
 
     }
 
-    //Old DriveBase functions
-    public void driveForward(double power, long duration){
-        frontLeftDrive.setPower(power);
-        frontRightDrive.setPower(power);
-        backLeftDrive.setPower(power);
-        backRightDrive.setPower(power);
-        sleep(duration);
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
-    public void driveBackward(double power, long duration){
-        frontLeftDrive.setPower(-power);
-        frontRightDrive.setPower(-power);
-        backLeftDrive.setPower(-power);
-        backRightDrive.setPower(-power);
-        sleep(duration);
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
-    public void driveLeft(double power, long duration){
-        frontLeftDrive.setPower(-power);
-        frontRightDrive.setPower(power);
-        backLeftDrive.setPower(power);
-        backRightDrive.setPower(-power);
-        sleep(duration);
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
-    public void driveRight(double power, long duration){
-        frontLeftDrive.setPower(power);
-        frontRightDrive.setPower(-power);
-        backLeftDrive.setPower(-power);
-        backRightDrive.setPower(power);
-        sleep(duration);
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
 
 
     //New DriveBase functions
@@ -317,6 +251,58 @@ public class New_Auto extends LinearOpMode{
             }
         }
     }
+    public void move(double tilesX, double tilesY){
+
+        //convert x and y from tiles to inches
+        double inchesX = tilesToInches(tilesX);
+        double inchesY = tilesToInches(tilesY);
+
+        //convert to polar coordinates
+        double theta = Math.atan2(inchesX, inchesY);
+        double r = Math.hypot(inchesX, inchesY);
+
+        //rotate to orient relative to field
+        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+
+        //convert back to cartesian coordinates
+        double newInchesX = r * Math.cos(theta);
+        double newInchesY = r * Math.sin(theta);
+
+
+        double
+                //calculate target counts for x
+                xTargetCounts = newInchesX * countsPerInch,
+
+                //calculate target counts for y
+                yTargetCounts = newInchesY * countsPerInch,
+
+                //calculate final target counts for motors
+                flTarget = yTargetCounts + xTargetCounts,
+                frTarget = yTargetCounts - xTargetCounts,
+                blTarget = yTargetCounts - xTargetCounts,
+                brTarget = yTargetCounts + xTargetCounts;
+
+        //run the motors to the calculated target positions
+        runMotorsToPos(flTarget, frTarget, blTarget, brTarget, 0.5);
+
+    }
+    public void pickUpBalls(){
+        if (onRedTeam){
+            turnTo(90);
+        } else {
+            turnTo(-90);
+        }
+
+        spinIntake();
+
+        drive("forward", 0.2, 24);
+
+        drive("backward", 0.2, 24);
+
+        turnTo(0);
+
+        stopIntake();
+    }
 
 
     //Intake functions
@@ -371,37 +357,11 @@ public class New_Auto extends LinearOpMode{
     }
 
 
-    //util and camera functions
+    //util functions
     private double getHeader(){
         double angle;
         angle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         return angle;
-    }
-    private double getAngleToTower(){
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        for (AprilTagDetection tag : currentDetections){
-            if (!onRedTeam && tag.id == 20) {
-                return tag.ftcPose.bearing;
-            }
-            if (onRedTeam && tag.id == 24) {
-                return tag.ftcPose.bearing;
-            }
-        }
-        return 0;
-    }
-    private double getPowerToShoot(){
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        double dist = 0;
-        for (AprilTagDetection tag : currentDetections){
-            if (!onRedTeam && tag.id == 20) {
-                dist = tag.ftcPose.range;
-            }
-            if (onRedTeam && tag.id == 24) {
-                dist = tag.ftcPose.range;
-            }
-        }
-
-        return 0.129165 * dist + 39.56322;
     }
     private void pointToTower(){
         while (true) {
@@ -463,6 +423,9 @@ public class New_Auto extends LinearOpMode{
         backRightDrive.setPower(power);
         backLeftDrive.setPower(power);
     }
+
+
+    //camera functions
     private void readTeam(){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection tag : currentDetections) {
@@ -482,6 +445,32 @@ public class New_Auto extends LinearOpMode{
             else if (tag.id == 23)
                 ballOrder = "PPG";
         }
+    }
+    private double getAngleToTower(){
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        for (AprilTagDetection tag : currentDetections){
+            if (!onRedTeam && tag.id == 20) {
+                return tag.ftcPose.bearing;
+            }
+            if (onRedTeam && tag.id == 24) {
+                return tag.ftcPose.bearing;
+            }
+        }
+        return 0;
+    }
+    private double getPowerToShoot(){
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        double dist = 0;
+        for (AprilTagDetection tag : currentDetections){
+            if (!onRedTeam && tag.id == 20) {
+                dist = tag.ftcPose.range;
+            }
+            if (onRedTeam && tag.id == 24) {
+                dist = tag.ftcPose.range;
+            }
+        }
+
+        return 0.129165 * dist + 39.56322;
     }
 
 
