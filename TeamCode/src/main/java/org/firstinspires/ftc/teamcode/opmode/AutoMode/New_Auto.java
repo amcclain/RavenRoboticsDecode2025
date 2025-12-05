@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.AutoMode;
 
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -11,6 +13,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -42,8 +45,8 @@ public class New_Auto extends LinearOpMode{
 
     boolean onRedTeam;
     String ballOrder;
-    double countsPerInch = 29.8;
-    double countsPerDegree = 7.4;
+    final double countsPerInch = 29.8;
+    final double countsPerDegree = 7.4;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -110,39 +113,67 @@ public class New_Auto extends LinearOpMode{
 //      Auto starts
 //--------------------------------------------------------------------------------------------------
 
-        /*spinIntake();
+        resetHeading();
 
         Wait(500);
 
-        driveBackward(0.5, 1000);
+        drive("forward", 0.5, 87);
 
-        Wait(100);
+        Wait(3000);
 
-        shootBalls(0.4);
+        shootBalls();
 
-        readTeam();
-
-        turn(-0.5, 300);
-
-        Wait(100);
+        turnTo(-15);
 
         readOrder();
 
-        turn(0.5, 300);
+        turnTo(0);
 
-        driveBackward(0.5, 650);*/
+        switch (ballOrder){
+            case "GPP":
 
-        drive("forward", 0.5, 24);
+                    move(0, -2.5);
 
-        turn("right", 0.5, 90);
+                break;
+            case "PGP":
 
-        drive("forward", 0.5, 24);
+                    move(0, -1.5);
 
+                break;
+            case "PPG":
+
+                move(0, -0.5);
+
+                break;
+        }
 
     }
 
+    public void move(double tilesX, double tilesY){
 
-    //DriveBase functions
+        //convert x and y from tiles to inches
+        tilesX = tilesToInches(tilesX);
+        tilesY = tilesToInches(tilesY);
+
+        double
+                //calculate target counts for x
+                xTargetCounts = tilesX * countsPerInch,
+
+                //calculate target counts for y
+                yTargetCounts = tilesY * countsPerInch,
+
+                //calculate final target counts for motors
+                flTarg = yTargetCounts + xTargetCounts,
+                frTarg = yTargetCounts - xTargetCounts,
+                blTarg = yTargetCounts - xTargetCounts,
+                brTarg = yTargetCounts + xTargetCounts;
+
+        //run the motors to the calculated target positions
+        runMotorsToPos(flTarg, frTarg, blTarg, brTarg, 0.5);
+
+    }
+
+    //Old DriveBase functions
     public void driveForward(double power, long duration){
         frontLeftDrive.setPower(power);
         frontRightDrive.setPower(power);
@@ -187,28 +218,7 @@ public class New_Auto extends LinearOpMode{
         backLeftDrive.setPower(0);
         backRightDrive.setPower(0);
     }
-    public void turnRight(double power, long duration){
-        frontLeftDrive.setPower(power);
-        frontRightDrive.setPower(-power);
-        backLeftDrive.setPower(power);
-        backRightDrive.setPower(-power);
-        sleep(duration);
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
-    public void turnLeft(double power, long duration){
-        frontLeftDrive.setPower(-power);
-        frontRightDrive.setPower(power);
-        backLeftDrive.setPower(-power);
-        backRightDrive.setPower(power);
-        sleep(duration);
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
+
 
     //New DriveBase functions
     public void drive(String direction, double power, double inches){
@@ -238,20 +248,20 @@ public class New_Auto extends LinearOpMode{
                 break;
         }
 
-        frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(STOP_AND_RESET_ENCODER);
 
         frontLeftDrive.setTargetPosition((int) flTarg);
         frontRightDrive.setTargetPosition((int) frTarg);
         backLeftDrive.setTargetPosition((int) blTarg);
         backRightDrive.setTargetPosition((int) brTarg);
 
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftDrive.setMode(RUN_TO_POSITION);
+        frontRightDrive.setMode(RUN_TO_POSITION);
+        backLeftDrive.setMode(RUN_TO_POSITION);
+        backRightDrive.setMode(RUN_TO_POSITION);
 
         frontLeftDrive.setPower(power);
         frontRightDrive.setPower(power);
@@ -273,20 +283,20 @@ public class New_Auto extends LinearOpMode{
             brTarg *= -1;
         }
 
-        frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(STOP_AND_RESET_ENCODER);
 
         frontLeftDrive.setTargetPosition((int) flTarg);
         frontRightDrive.setTargetPosition((int) frTarg);
         backLeftDrive.setTargetPosition((int) blTarg);
         backRightDrive.setTargetPosition((int) brTarg);
 
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftDrive.setMode(RUN_TO_POSITION);
+        frontRightDrive.setMode(RUN_TO_POSITION);
+        backLeftDrive.setMode(RUN_TO_POSITION);
+        backRightDrive.setMode(RUN_TO_POSITION);
 
         frontLeftDrive.setPower(power);
         frontRightDrive.setPower(power);
@@ -294,22 +304,22 @@ public class New_Auto extends LinearOpMode{
         backLeftDrive.setPower(power);
 
     }
-
-
-    //Shooter and Ball Magazine functions
-    public void shootBall(double power){
-        rightShooterMotor.setPower(power);
-        leftShooterMotor.setPower(power);
-        belt.setPower(0.8);
-        sleep(1250);
-        liftServo.setPosition(0.3);
-        sleep(1250);
-        belt.setPower(0);
-        liftServo.setPosition(0);
-        rightShooterMotor.setPower(0);
-        leftShooterMotor.setPower(0);
-        sleep(1250);
+    private void turnTo(double degrees){
+        while (true) {
+            double currentAngle = getHeader();
+            double turnPower = Math.min(Math.abs(degrees) / 40, 0.5);
+            if (currentAngle <= degrees - 0.5) {
+                turnLeft(turnPower);
+            } else if (currentAngle >= degrees + 0.5) {
+                turnRight(turnPower);
+            } else {
+                break;
+            }
+        }
     }
+
+
+    //Intake functions
     public void spinIntake(){
         intake.setPower(1);
         belt.setPower(0.8);
@@ -319,7 +329,9 @@ public class New_Auto extends LinearOpMode{
         belt.setPower(0);
     }
 
-    public void shootBalls(double power){
+
+    //shooting functions
+    private void unloadBalls(double power){
         //spin up motor
         rightShooterMotor.setPower(power);
         leftShooterMotor.setPower(power);
@@ -353,8 +365,104 @@ public class New_Auto extends LinearOpMode{
         leftShooterMotor.setPower(0);
 
     }
+    private void shootBalls(){
+        pointToTower();
+        unloadBalls(getPowerToShoot());
+    }
 
-    //camera functions
+
+    //util and camera functions
+    private double getHeader(){
+        double angle;
+        angle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        return angle;
+    }
+    private double getAngleToTower(){
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        for (AprilTagDetection tag : currentDetections){
+            if (!onRedTeam && tag.id == 20) {
+                return tag.ftcPose.bearing;
+            }
+            if (onRedTeam && tag.id == 24) {
+                return tag.ftcPose.bearing;
+            }
+        }
+        return 0;
+    }
+    private double getPowerToShoot(){
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        double dist = 0;
+        for (AprilTagDetection tag : currentDetections){
+            if (!onRedTeam && tag.id == 20) {
+                dist = tag.ftcPose.range;
+            }
+            if (onRedTeam && tag.id == 24) {
+                dist = tag.ftcPose.range;
+            }
+        }
+
+        return 0.129165 * dist + 39.56322;
+    }
+    private void pointToTower(){
+        while (true) {
+            double angleToTower = getAngleToTower();
+            double turnPower = Math.min(Math.abs(angleToTower) / 40, 0.5);
+            if (angleToTower < -1) {
+                turnLeft(turnPower);
+            } else if (angleToTower > 1) {
+                turnRight(turnPower);
+            } else {
+                break;
+            }
+        }
+    }
+    private void resetHeading(){
+        //resets the IMU yaw
+        imu.resetYaw();
+    }
+    public void turnRight(double power){
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(-power);
+        backLeftDrive.setPower(power);
+        backRightDrive.setPower(-power);
+    }
+    public void turnLeft(double power){
+        frontLeftDrive.setPower(-power);
+        frontRightDrive.setPower(power);
+        backLeftDrive.setPower(-power);
+        backRightDrive.setPower(power);
+    }
+    private double tilesToInches(double tiles){
+        double inches;
+        inches = tiles * 24;
+        return inches;
+    }
+    public void runMotorsToPos(double frontLeftTarget, double frontRightTarget, double backLeftTarget, double backRightTarget, double power){
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+
+        frontLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(STOP_AND_RESET_ENCODER);
+
+        frontLeftDrive.setTargetPosition((int) frontLeftTarget);
+        frontRightDrive.setTargetPosition((int) frontRightTarget);
+        backLeftDrive.setTargetPosition((int) backLeftTarget);
+        backRightDrive.setTargetPosition((int) backRightTarget);
+
+        frontLeftDrive.setMode(RUN_TO_POSITION);
+        frontRightDrive.setMode(RUN_TO_POSITION);
+        backLeftDrive.setMode(RUN_TO_POSITION);
+        backRightDrive.setMode(RUN_TO_POSITION);
+
+        frontLeftDrive.setPower(power);
+        frontRightDrive.setPower(power);
+        backRightDrive.setPower(power);
+        backLeftDrive.setPower(power);
+    }
     private void readTeam(){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection tag : currentDetections) {
@@ -382,6 +490,7 @@ public class New_Auto extends LinearOpMode{
         //just to make code more readable
         sleep(duration);
     }
+
 
     //init functions
     public void defineMotors(){
@@ -441,6 +550,7 @@ public class New_Auto extends LinearOpMode{
 
     }
     public void initIMU(){
+        imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(
                 new IMU.Parameters(
                         new RevHubOrientationOnRobot(
