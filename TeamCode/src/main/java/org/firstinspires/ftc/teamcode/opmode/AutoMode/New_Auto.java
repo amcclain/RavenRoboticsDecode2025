@@ -154,7 +154,7 @@ public class New_Auto extends LinearOpMode{
 
 
 
-    //New DriveBase functions
+    //DriveBase functions
     public void drive(String direction, double power, double inches){
         double targetCounts = inches * countsPerInch,
                 flTarg = targetCounts,
