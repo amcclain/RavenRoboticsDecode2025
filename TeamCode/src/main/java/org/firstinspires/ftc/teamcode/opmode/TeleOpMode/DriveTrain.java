@@ -58,7 +58,6 @@ public class DriveTrain extends OpMode {
 
     //camera stuff
     private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
 
     //declares the Inertial Measurement Unit
     IMU imu;
@@ -297,7 +296,7 @@ public class DriveTrain extends OpMode {
         builder.addProcessor(aprilTag);
 
         // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
+        VisionPortal visionPortal = builder.build();
 
         // Disable or re-enable the aprilTag processor at any time.
         visionPortal.setProcessorEnabled(aprilTag, true);
