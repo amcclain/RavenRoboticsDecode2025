@@ -101,7 +101,25 @@ public class MainRobotCode extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         initAprilTag();
+
+        while (true){
+            telemetry.addLine("press right bumper for red team");
+            telemetry.addLine("press left bumper for blue team");
+            if (gp.leftBumperPressed){
+                redTeam = false;
+                telemetry.addLine("blue team selected");
+                telemetry.update();
+                break;
+            } else if (gp.rightBumperPressed){
+                redTeam = true;
+                telemetry.addLine("red team selected");
+                telemetry.update();
+                break;
+            }
+            telemetry.update();
+        }
     }
+
     int velocity = 1000;
     int maxVelocity = 2000;
     int stepVelocitySize = 1;
@@ -216,13 +234,21 @@ public class MainRobotCode extends OpMode {
         //Lift servos
         if (gp.b)
             aLifting = true;
+
         if (aLifting){
+
             ballLiftA.setPosition(0.3);
+
             if (ballLiftA.getPosition() >= 0.3)
                 aLifting = false;
+
         } else {
             ballLiftA.setPosition(0.06);
         }
+
+        telemetry.addLine("");
+        telemetry.addLine("servoLifting is " + aLifting);
+        telemetry.addLine("lift servo is at " + ballLiftA.getPosition());
 
 
         //driving
@@ -235,6 +261,7 @@ public class MainRobotCode extends OpMode {
             driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
 
+        telemetry.update();
 
     }
 
@@ -390,12 +417,9 @@ public class MainRobotCode extends OpMode {
         ///ret = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
 
         //just a line
-        ret = 0.129165 * distance + 39.56322;
+        ret = 0.164681 * distance + 37.09811;
 
-        //manually add 2% to power
-        ret += 2;
-
-        //make sure power is between 100% and 0%
+        //make sure power is between 0% and 100%
         ret = Math.max(ret, 0);
         ret = Math.min(ret, 100);
 
@@ -420,9 +444,9 @@ public class MainRobotCode extends OpMode {
         double angle = getAngleToTower();
         double power = Math.min(Math.abs(angle)/40, 0.5);
 
-        if (angle < -2){
+        if (angle < -7){
             turnLeft(power);
-        } else if (angle > 2){
+        } else if (angle > - 6){
             turnRight(power);
         }
     }
