@@ -9,6 +9,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -21,8 +22,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "New Auto", group = "robot")
-public class New_Auto extends LinearOpMode{
+@Autonomous(name = "Blue Auto", group = "robot")
+public class Blue_Auto extends LinearOpMode{
 
     //declare DriveBase motors
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
@@ -32,7 +33,7 @@ public class New_Auto extends LinearOpMode{
     Servo liftServo;
 
     //declare Shooter motors and servos
-    DcMotor rightShooterMotor, leftShooterMotor;
+    DcMotorEx rightShooterMotor, leftShooterMotor;
 
     WaverlyGamepad wgp;
 
@@ -40,10 +41,12 @@ public class New_Auto extends LinearOpMode{
     double adjustableDegrees = 90;
 
     private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
+    boolean cameraWorking = false;
 
     IMU imu;
 
-    boolean onRedTeam;
+    boolean onRedTeam = false;
     String ballOrder;
     final double countsPerInch = 29.8;
     final double countsPerDegree = 7.4;
@@ -103,7 +106,11 @@ public class New_Auto extends LinearOpMode{
             telemetry.addLine("Left and right is fine tuning");
             telemetry.addLine("");
             telemetry.addLine("counts per inch is: " + adjustableInches);
-            telemetry.addLine(" counts per degree is: " + adjustableDegrees);
+            telemetry.addLine("counts per degree is: " + adjustableDegrees);
+            telemetry.addLine("");
+            if (cameraWorking) telemetry.addLine("CAMERA ONLINE");
+            telemetry.addLine("");
+            if (imu.getRobotYawPitchRollAngles() != null) telemetry.addLine("IMU ONLINE");
             telemetry.update();
         }
 
@@ -115,40 +122,60 @@ public class New_Auto extends LinearOpMode{
 
         resetHeading();
 
+        intake.setPower(0.2);
+
         Wait(500);
 
-        drive("forward", 0.5, 87);
+        drive("backward", 0.5, 57);
 
-        Wait(3000);
+        Wait(2500);
 
-        turnTo(15);
+        turn("left", 0.1, 2);
+
+        Wait(1000);
+
+        telemetry.addLine("driving complete");
+        updateTel();
 
         readTeam();
 
-        shootBalls();
+        telemetry.addLine("read team");
+        updateTel();
 
-        turnTo(-15);
+        unloadBalls(0.48);
 
-        readOrder();
+        telemetry.addLine("shooting complete");
+        updateTel();
 
-        turnTo(0);
+        turn("left", 0.5, 37);
 
-        switch (ballOrder){
-            case "GPP":
-                drive("backward", 0.5, 60);
-                Wait(2500);
-                break;
-            case "PGP":
-                drive("backward", 0.5, 36);
-                Wait(1500);
-                break;
-            case "PPG":
-                drive("backward", 0.5, 12);
-                Wait(500);
-                break;
-        }
+        Wait(1000);
 
-        pickUpBalls();
+        telemetry.addLine("turning complete");
+        updateTel();
+
+        drive("forward", 0.15, 39);
+
+        spinIntake();
+
+        Wait(3500);
+
+        drive("backward", 0.15, 39);
+
+        Wait(3500);
+
+        stopIntake();
+
+        turn("right", 0.5, 42);
+
+        Wait(1000);
+
+        unloadBalls(0.49);
+
+        telemetry.addLine("finished");
+        updateTel();
+
+        sleep(5000);
 
     }
 
@@ -163,7 +190,7 @@ public class New_Auto extends LinearOpMode{
                 brTarg = targetCounts;
 
         switch (direction) {
-            case "back":
+            case "backward":
                 flTarg *= -1;
                 frTarg *= -1;
                 blTarg *= -1;
@@ -239,16 +266,26 @@ public class New_Auto extends LinearOpMode{
 
     }
     private void turnTo(double degrees){
+
+        frontLeftDrive.setMode(RUN_USING_ENCODER);
+        frontRightDrive.setMode(RUN_USING_ENCODER);
+        backLeftDrive.setMode(RUN_USING_ENCODER);
+        backRightDrive.setMode(RUN_USING_ENCODER);
+
         while (true) {
+            telemetry.addLine("entered turning loop");
             double currentAngle = getHeader();
+            telemetry.addLine("angle: " + currentAngle);
             double turnPower = Math.min(Math.abs(degrees) / 40, 0.5);
+            telemetry.addLine("power: " + turnPower);
             if (currentAngle <= degrees - 0.5) {
-                turnLeft(turnPower);
+                turnLeft(0.1);
             } else if (currentAngle >= degrees + 0.5) {
-                turnRight(turnPower);
+                turnRight(0.1);
             } else {
                 break;
             }
+            updateTel();
         }
     }
     public void move(double tilesX, double tilesY){
@@ -318,42 +355,48 @@ public class New_Auto extends LinearOpMode{
 
     //shooting functions
     private void unloadBalls(double power){
+
         //spin up motor
-        rightShooterMotor.setPower(power);
-        leftShooterMotor.setPower(power);
-        sleep(250);
+        rightShooterMotor.setVelocity(2000 * power);
+        leftShooterMotor.setVelocity(2000 * power);
+        telemetry.addLine("spinning up motors at " + power);
+        updateTel();
+
+        //turn belt on
+        belt.setPower(0.35);
+        sleep(1000);
 
         //shoot ball
         liftServo.setPosition(0.3);
-        sleep(100);
-        liftServo.setPosition(0.3);
+        sleep(1000);
+        liftServo.setPosition(0.06);
 
         //turn on belt
-        belt.setPower(0.8);
-        sleep(100);
+        spinIntake();
+        sleep(1250);
 
         //shoot ball
         liftServo.setPosition(0.3);
-        sleep(100);
-        liftServo.setPosition(0.3);
-        sleep(100);
+        sleep(1000);
+        liftServo.setPosition(0.06);
+        sleep(1250);
 
         //shoot ball
         liftServo.setPosition(0.3);
-        sleep(100);
-        liftServo.setPosition(0.3);
+        sleep(1000);
+        liftServo.setPosition(0.06);
 
         //turn off belt
-        belt.setPower(0.8);
+        stopIntake();
 
         //spin down motor
         rightShooterMotor.setPower(0);
         leftShooterMotor.setPower(0);
 
     }
-    private void shootBalls(){
+    private void shootBalls(double power){
         pointToTower();
-        unloadBalls(getPowerToShoot());
+        unloadBalls(power);
     }
 
 
@@ -445,6 +488,7 @@ public class New_Auto extends LinearOpMode{
             else if (tag.id == 23)
                 ballOrder = "PPG";
         }
+        if (ballOrder == null) ballOrder = "unknown";
     }
     private double getAngleToTower(){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
@@ -490,8 +534,8 @@ public class New_Auto extends LinearOpMode{
         backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
 
         //defines Shooter motors
-        rightShooterMotor = hardwareMap.get(DcMotor.class, "RightShooterMotor");
-        leftShooterMotor = hardwareMap.get(DcMotor.class, "LeftShooterMotor");
+        rightShooterMotor = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
+        leftShooterMotor = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
 
         //defines Ball Magazine Servos and motors
         intake = hardwareMap.get(DcMotor.class, "Intake");
@@ -532,11 +576,12 @@ public class New_Auto extends LinearOpMode{
         builder.addProcessor(aprilTag);
 
         // Build the Vision Portal, using the above settings.
-        VisionPortal visionPortal = builder.build();
+         visionPortal = builder.build();
 
         // Disable or re-enable the aprilTag processor at any time.
         visionPortal.setProcessorEnabled(aprilTag, true);
 
+        cameraWorking = true;
     }
     public void initIMU(){
         imu = hardwareMap.get(IMU.class, "imu");
@@ -548,5 +593,13 @@ public class New_Auto extends LinearOpMode{
                         )
                 )
         );
+    }
+
+    //util functions
+    public void updateTel(){
+        telemetry.addLine("");
+        telemetry.addLine("on red team? " + onRedTeam);
+        telemetry.addLine("ball order is " + ballOrder);
+        telemetry.update();
     }
 }
