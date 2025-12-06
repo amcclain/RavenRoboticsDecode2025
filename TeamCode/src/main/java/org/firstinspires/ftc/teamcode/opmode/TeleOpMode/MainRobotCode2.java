@@ -6,7 +6,6 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -19,12 +18,11 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-import java.lang.Math;
 import java.util.List;
 
 
-@TeleOp(name = "Red Main", group = "Robot")
-public class MainRobotCode extends OpMode {
+@TeleOp(name = "Blue Main", group = "Robot")
+public class MainRobotCode2 extends OpMode {
 
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
@@ -38,7 +36,7 @@ public class MainRobotCode extends OpMode {
     //declares the Inertial Measurement Unit
     IMU imu;
 
-    boolean redTeam = true;
+    boolean redTeam = false;
     boolean autoShooting = false;
 
     // Set from tag detection
