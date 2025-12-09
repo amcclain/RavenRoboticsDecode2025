@@ -21,8 +21,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 
-@TeleOp(name = "Blue Main", group = "Robot")
-public class MainRobotCode2 extends OpMode {
+@TeleOp(name = "Run Belt", group = "Robot")
+public class RunBelt extends OpMode {
 
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
@@ -36,7 +36,7 @@ public class MainRobotCode2 extends OpMode {
     //declares the Inertial Measurement Unit
     IMU imu;
 
-    boolean redTeam = false;
+    boolean redTeam = true;
     boolean autoShooting = false;
 
     // Set from tag detection
@@ -158,88 +158,14 @@ public class MainRobotCode2 extends OpMode {
         gp.readButtons();
 
 
-        //reset robot Yaw
-        if (gp.dpadDownPressed){
-            imu.resetYaw();
-        }
-
-
-        //show or hide controls
-        if (gp.dpadLeftPressed){
-            showControls = !showControls;
-        }
-
-
         //intake
         if (gp.aPressed){
             intakeActive = !intakeActive;
         }
-        if (gp.rightTriggerPressed){
-            direction = -direction;
-        }
         if (intakeActive) {
-            intake.setPower(direction);
-            belt.setPower(direction*0.8);
+            belt.setPower(0.8);
         } else {
-            intake.setPower(0);
-            belt.setPower(0);
-        }
-
-
-        //shooting
-        if (gp.leftBumperPressed){
-            velocity = Math.max(velocity - stepVelocity, 0);
-        }
-        if (gp.rightBumperPressed){
-            velocity = Math.min(velocity + stepVelocity, maxVelocity);
-        }
-        if (gp.leftTriggerPressed){
-            autoShooting = !autoShooting;
-        }
-        if (gp.yPressed){
-            shooting = !shooting;
-        }
-        if (autoShooting){
-            velocity = (int) Math.round(recVelocity);
-            pointToTower();
-        }
-        if (shooting){
-            rShooter.setVelocity(velocity);
-            lShooter.setVelocity(velocity);
-        } else {
-            rShooter.setVelocity(0);
-            lShooter.setVelocity(0);
-        }
-
-
-        //Lift servos
-        if (gp.b)
-            aLifting = true;
-
-        if (aLifting){
-
-            ballLiftA.setPosition(0.3);
-
-            if (ballLiftA.getPosition() >= 0.3)
-                aLifting = false;
-
-        } else {
-            ballLiftA.setPosition(0.06);
-        }
-
-        telemetry.addLine("");
-        telemetry.addLine("servoLifting is " + aLifting);
-        telemetry.addLine("lift servo is at " + ballLiftA.getPosition());
-
-
-        //driving
-        if (gp.dpadUpPressed){
-            relativeDrive = !relativeDrive;
-        }
-        if (relativeDrive) {
-            drive(gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
-        } else {
-            driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
+            belt.setPower(0.4);
         }
 
         telemetry.update();
@@ -425,9 +351,9 @@ public class MainRobotCode2 extends OpMode {
         double angle = getAngleToTower();
         double power = Math.min(Math.abs(angle)/40, 0.5);
 
-        if (angle < -7){
+        if (angle < -1){
             turnLeft(power);
-        } else if (angle > - 6){
+        } else if (angle > 1){
             turnRight(power);
         }
     }
