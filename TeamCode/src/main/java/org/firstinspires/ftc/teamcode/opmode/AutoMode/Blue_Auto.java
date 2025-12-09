@@ -126,11 +126,11 @@ public class Blue_Auto extends LinearOpMode{
 
         Wait(500);
 
-        drive("backward", 0.5, 57);
+        drive("backward", 0.5, 59);
 
         Wait(2500);
 
-        turn("left", 0.1, 2);
+        turn("right", 0.25,  3);
 
         Wait(1000);
 
@@ -142,25 +142,25 @@ public class Blue_Auto extends LinearOpMode{
         telemetry.addLine("read team");
         updateTel();
 
-        unloadBalls(0.48);
+        unloadBalls(0.49);
 
         telemetry.addLine("shooting complete");
         updateTel();
 
-        turn("left", 0.5, 37);
+        turn("left", 0.5, 42);
 
         Wait(1000);
 
         telemetry.addLine("turning complete");
         updateTel();
 
-        drive("forward", 0.15, 39);
+        drive("forward", 0.15, 43);
 
         spinIntake();
 
         Wait(3500);
 
-        drive("backward", 0.15, 39);
+        drive("backward", 0.15, 43);
 
         Wait(3500);
 
@@ -171,6 +171,8 @@ public class Blue_Auto extends LinearOpMode{
         Wait(1000);
 
         unloadBalls(0.49);
+
+        drive("left", 0.5, 24);
 
         telemetry.addLine("finished");
         updateTel();
