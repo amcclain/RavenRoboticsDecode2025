@@ -113,6 +113,7 @@ public class MainRobotCode extends OpMode {
     boolean intakeActive = false;
     boolean showControls = false;
     boolean aLifting = false;
+    double timer = 0;
 
     @Override
     public void loop() {
@@ -184,7 +185,7 @@ public class MainRobotCode extends OpMode {
             belt.setPower(direction*0.8);
         } else {
             intake.setPower(0);
-            belt.setPower(0);
+            belt.setPower(0.5);
         }
 
 
@@ -215,14 +216,18 @@ public class MainRobotCode extends OpMode {
 
 
         //Lift servos
-        if (gp.b)
+        if (gp.bPressed) {
             aLifting = true;
+            timer = 0;
+        }
 
         if (aLifting){
 
             ballLiftA.setPosition(0.3);
 
-            if (ballLiftA.getPosition() >= 0.3)
+            timer++;
+
+            if (timer >= 20 && !gp.b)
                 aLifting = false;
 
         } else {
@@ -427,9 +432,9 @@ public class MainRobotCode extends OpMode {
         double angle = getAngleToTower();
         double power = Math.min(Math.abs(angle)/40, 0.5);
 
-        if (angle < -7){
+        if (angle < -1){
             turnLeft(power);
-        } else if (angle > - 6){
+        } else if (angle > 1){
             turnRight(power);
         }
     }
