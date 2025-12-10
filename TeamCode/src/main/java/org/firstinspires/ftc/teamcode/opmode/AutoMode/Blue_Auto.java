@@ -545,7 +545,6 @@ public class Blue_Auto extends LinearOpMode{
         liftServo = hardwareMap.get(Servo.class, "BallLiftA");
 
         //reverses motors that are on backwards
-        backLeftDrive.setDirection(REVERSE);
         frontLeftDrive.setDirection(REVERSE);
         frontRightDrive.setDirection(REVERSE);
         rightShooterMotor.setDirection(REVERSE);

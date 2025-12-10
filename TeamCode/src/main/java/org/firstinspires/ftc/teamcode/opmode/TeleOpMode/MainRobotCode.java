@@ -78,6 +78,7 @@ public class MainRobotCode extends OpMode {
 
         //flips the direction of the necessary motors
         backRightDrive.setDirection(REVERSE);
+        backLeftDrive.setDirection(REVERSE);
         rShooter.setDirection(REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
