@@ -42,27 +42,39 @@ public class Show_Case extends OpMode {
         initIMU();
 
         gp = new WaverlyGamepad(gamepad1);
+
+        //init loop
+        while (true){
+
+            //use bumpers to adjust modeNum
+            if (gp.leftBumperPressed) {
+                modeNum--;
+                if (modeNum < 1) modeNum = 3;
+            } else if (gp.rightBumperPressed) {
+                modeNum++;
+                if (modeNum > 3) modeNum = 1;
+            }
+
+            //select mode
+
+            //output to the screen
+            telemetry.addLine("Select mode:");
+            telemetry.addLine("");
+            telemetry.addLine((modeNum == 1? "> " : "") + "Back to Start mode");
+            telemetry.addLine((modeNum == 2? "> " : "") + "Shoot Tag mode");
+            telemetry.addLine((modeNum == 3? "> " : "") + "field Position mode");
+            telemetry.addLine("");
+            telemetry.addLine("");
+            telemetry.addLine("Button pressed on gamepad1:");
+            telemetry.addLine("  left bumper " + gp.leftBumper);
+            telemetry.addLine("  right bumper " + gp.rightBumper);
+
+            telemetry.update();
+        }
     }
 
     @Override
     public void init_loop(){
-
-        //use bumpers to adjust modeNum
-        if (gp.leftBumperPressed) {
-            modeNum--;
-            if (modeNum < 1) modeNum = 3;
-        } else if (gp.rightBumperPressed) {
-            modeNum++;
-            if (modeNum > 3) modeNum = 1;
-        }
-
-        //output to the screen
-        telemetry.addLine("Select mode:");
-        telemetry.addLine("");
-        telemetry.addLine((modeNum == 1? "> " : "") + "Back to Start mode");
-        telemetry.addLine((modeNum == 2? "> " : "") + "Shoot Tag mode");
-        telemetry.addLine((modeNum == 3? "> " : "") + "field Position mode");
-        telemetry.update();
     }
 
     @Override
