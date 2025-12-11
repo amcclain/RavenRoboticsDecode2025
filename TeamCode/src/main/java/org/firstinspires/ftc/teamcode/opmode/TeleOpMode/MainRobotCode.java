@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -29,7 +30,8 @@ public class MainRobotCode extends OpMode {
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
     DcMotorEx rShooter, lShooter;
-    Servo ballLiftA;
+    Servo ballLiftA, ballLiftB;
+    LED lights;
     WaverlyGamepad gp = null;
 
     //camera stuff
@@ -55,7 +57,6 @@ public class MainRobotCode extends OpMode {
         return this.redTeam ? this.angleToRedTower : this.angleToBlueTower;
     }
     double recVelocity;
-    double[] tags = new double[5];
 
 
     @Override
@@ -75,6 +76,10 @@ public class MainRobotCode extends OpMode {
 
         //define servos
         ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
+        ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
+
+        //very cool LED
+        lights = hardwareMap.get(LED.class, "LED");
 
         //flips the direction of the necessary motors
         backRightDrive.setDirection(REVERSE);
@@ -235,6 +240,12 @@ public class MainRobotCode extends OpMode {
             ballLiftA.setPosition(0.06);
         }
 
+        if (gp.x){
+            ballLiftB.setPosition(0.3);
+        } else {
+            ballLiftB.setPosition(0);
+        }
+
         telemetry.addLine("");
         telemetry.addLine("servoLifting is " + aLifting);
         telemetry.addLine("lift servo is at " + ballLiftA.getPosition());
@@ -327,7 +338,12 @@ public class MainRobotCode extends OpMode {
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
         // Set the webcam
-        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        if (hardwareMap.get(WebcamName.class, "Webcam 1") != null) {
+            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        }
+        else if (hardwareMap.get(WebcamName.class, "Ethernet Device") != null) {
+            builder.setCamera(hardwareMap.get(WebcamName.class, "Ethernet Device"));
+        }
 
 
         // Choose a camera resolution. Not all cameras support all resolutions.
