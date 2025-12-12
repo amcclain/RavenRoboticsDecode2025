@@ -6,7 +6,6 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -30,7 +29,7 @@ public class MainRobotCode extends OpMode {
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
     DcMotorEx rShooter, lShooter;
-    Servo ballLiftA, ballLiftB;
+    Servo ballLift, ballRamp;
     LED lights;
     WaverlyGamepad gp = null;
 
@@ -75,8 +74,8 @@ public class MainRobotCode extends OpMode {
         lShooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
 
         //define servos
-        ballLiftA = hardwareMap.get(Servo.class, "BallLiftA");
-        ballLiftB = hardwareMap.get(Servo.class, "BallLiftB");
+        ballLift = hardwareMap.get(Servo.class, "BallLift");
+        ballRamp = hardwareMap.get(Servo.class, "BallRamp");
 
         //very cool LED
         lights = hardwareMap.get(LED.class, "LED");
@@ -229,7 +228,7 @@ public class MainRobotCode extends OpMode {
 
         if (aLifting){
 
-            ballLiftA.setPosition(0.3);
+            ballLift.setPosition(0.3);
 
             timer++;
 
@@ -237,18 +236,18 @@ public class MainRobotCode extends OpMode {
                 aLifting = false;
 
         } else {
-            ballLiftA.setPosition(0.06);
+            ballLift.setPosition(0.06);
         }
 
         if (gp.x){
-            ballLiftB.setPosition(0.3);
+            ballRamp.setPosition(0.3);
         } else {
-            ballLiftB.setPosition(0);
+            ballRamp.setPosition(0);
         }
 
         telemetry.addLine("");
         telemetry.addLine("servoLifting is " + aLifting);
-        telemetry.addLine("lift servo is at " + ballLiftA.getPosition());
+        telemetry.addLine("lift servo is at " + ballLift.getPosition());
 
 
         //driving
