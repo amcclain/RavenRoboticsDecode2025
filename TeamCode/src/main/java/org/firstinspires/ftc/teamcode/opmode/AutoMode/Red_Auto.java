@@ -127,39 +127,39 @@ public class Red_Auto extends LinearOpMode{
 
         Wait(500);
 
-        drive("backward", 0.75, 87);
+        drive("backward", 0.8, 87);
 
-        Wait(4000);
+        Wait(2500);
 
         readTeam();
 
         unloadBalls(0.49);
 
-        turn("right", 0.5, 57);
+        turn("right", 0.8, 57);
 
-        Wait(1000);
+        Wait(750);
 
-        drive("forward", 0.5, 65);
+        drive("forward", 0.5, 70);
 
         spinIntake();
 
-        Wait(3000);
+        Wait(2500);
 
-        drive("backward", 0.5, 65);
+        drive("backward", 0.5, 70);
 
-        Wait(3000);
+        Wait(2500);
 
         stopIntake();
 
-        turn("left", 0.5, 57);
+        turn("left", 0.8, 57);
 
-        Wait(1000);
+        Wait(750);
 
         intake.setPower(0.2);
 
         unloadBalls(0.49);
 
-        drive("right", 1, 36);
+        drive("right", 0.8, 36);
 
         sleep(2000);
 
