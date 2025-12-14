@@ -123,61 +123,45 @@ public class Red_Auto extends LinearOpMode{
         resetHeading();
 
         intake.setPower(0.2);
+        belt.setPower(0.5);
 
         Wait(500);
 
-        drive("backward", 0.5, 59);
+        drive("backward", 0.75, 87);
 
-        Wait(2500);
-
-        turn("left", 0.25,  3);
-
-        Wait(1000);
-
-        telemetry.addLine("driving complete");
-        updateTel();
+        Wait(4000);
 
         readTeam();
 
-        telemetry.addLine("read team");
-        updateTel();
-
         unloadBalls(0.49);
 
-        telemetry.addLine("shooting complete");
-        updateTel();
-
-        turn("right", 0.5, 42);
+        turn("right", 0.5, 57);
 
         Wait(1000);
 
-        telemetry.addLine("turning complete");
-        updateTel();
-
-        drive("forward", 0.15, 43);
+        drive("forward", 0.5, 65);
 
         spinIntake();
 
-        Wait(3500);
+        Wait(3000);
 
-        drive("backward", 0.15, 43);
+        drive("backward", 0.5, 65);
 
-        Wait(3500);
+        Wait(3000);
 
         stopIntake();
 
-        turn("left", 0.5, 42);
+        turn("left", 0.5, 57);
 
         Wait(1000);
 
+        intake.setPower(0.2);
+
         unloadBalls(0.49);
 
-        drive("right", 0.5, 24);
+        drive("right", 1, 36);
 
-        telemetry.addLine("finished");
-        updateTel();
-
-        sleep(5000);
+        sleep(2000);
 
     }
 
@@ -365,8 +349,8 @@ public class Red_Auto extends LinearOpMode{
         updateTel();
 
         //turn belt on
-        belt.setPower(0.35);
-        sleep(1000);
+        belt.setPower(0.5);
+        sleep(1250);
 
         //shoot ball
         liftServo.setPosition(0.3);
@@ -375,7 +359,7 @@ public class Red_Auto extends LinearOpMode{
 
         //turn on belt
         spinIntake();
-        sleep(1250);
+        sleep(1750);
 
         //shoot ball
         liftServo.setPosition(0.3);
@@ -542,7 +526,7 @@ public class Red_Auto extends LinearOpMode{
         //defines Ball Magazine Servos and motors
         intake = hardwareMap.get(DcMotor.class, "Intake");
         belt = hardwareMap.get(DcMotor.class, "Belt");
-        liftServo = hardwareMap.get(Servo.class, "BallLiftA");
+        liftServo = hardwareMap.get(Servo.class, "BallLift");
 
         //reverses motors that are on backwards
         frontLeftDrive.setDirection(REVERSE);
