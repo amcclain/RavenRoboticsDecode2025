@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -30,7 +29,6 @@ public class MainRobotCode extends OpMode {
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
     DcMotorEx rShooter, lShooter;
     Servo ballLift, ballRamp;
-    LED lights;
     WaverlyGamepad gp = null;
 
     //camera stuff
@@ -76,9 +74,6 @@ public class MainRobotCode extends OpMode {
         //define servos
         ballLift = hardwareMap.get(Servo.class, "BallLift");
         ballRamp = hardwareMap.get(Servo.class, "BallRamp");
-
-        //very cool LED
-        lights = hardwareMap.get(LED.class, "LED");
 
         //flips the direction of the necessary motors
         backRightDrive.setDirection(REVERSE);
@@ -148,7 +143,6 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
         telemetry.addLine("");
         telemetry.addLine("");
-        //telemetryAprilTag();
 
 
         detectTags();
@@ -343,6 +337,9 @@ public class MainRobotCode extends OpMode {
         else if (hardwareMap.get(WebcamName.class, "Ethernet Device") != null) {
             builder.setCamera(hardwareMap.get(WebcamName.class, "Ethernet Device"));
         }
+        else {
+            throw new IllegalArgumentException("Camera Not Working");
+        }
 
 
         // Choose a camera resolution. Not all cameras support all resolutions.
@@ -417,11 +414,12 @@ public class MainRobotCode extends OpMode {
     private double calcRecVelocityPct(double distance){
         double ret;
 
-        //5th order polynomial regression
-        ///ret = -314.03147 + 21.18897 * distance - 0.455746 * Math.pow(distance, 2) + 0.00425019 * Math.pow(distance, 3) - 0.0000144522 * Math.pow(distance, 4);
+        //new
+        //y=0.20847x+34.25142
+        ret = 0.20847 * distance + 34.25142;
 
-        //just a line
-        ret = 0.164681 * distance + 37.09811;
+        //old
+        //ret = 0.164681 * distance + 37.09811;
 
         //make sure power is between 0% and 100%
         ret = Math.max(ret, 0);
