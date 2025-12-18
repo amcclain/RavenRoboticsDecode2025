@@ -301,7 +301,7 @@ public class MainRobotCode extends OpMode {
         if (gp.x){
             ballRamp.setPosition(0.13);
         } else {
-            ballRamp.setPosition(0);
+            ballRamp.setPosition(0.07);
         }
 
 
