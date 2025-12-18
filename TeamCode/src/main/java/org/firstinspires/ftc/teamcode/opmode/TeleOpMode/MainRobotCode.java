@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.opmode.TeleOpMode;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -11,8 +14,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -29,13 +34,14 @@ public class MainRobotCode extends OpMode {
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
     DcMotorEx rShooter, lShooter;
     Servo ballLift, ballRamp;
+    RevBlinkinLedDriver led;
     WaverlyGamepad gp = null;
 
     //camera stuff
     private AprilTagProcessor aprilTag;
 
     //declares the Inertial Measurement Unit
-    IMU imu;
+    private IMU imu;
 
     boolean redTeam = true;
     boolean autoShooting = false;
@@ -50,30 +56,48 @@ public class MainRobotCode extends OpMode {
     double getDistToTower() {
         return this.redTeam ? this.distToRedTower : this.distToBlueTower;
     }
-    double getAngleToTower() {
-        return this.redTeam ? this.angleToRedTower : this.angleToBlueTower;
-    }
     double recVelocity;
 
+    double cycles = 0;
+    boolean canSeeTower = false;
+    boolean pointingToTower = false;
+
+    double velocity = 1000;
+    int maxVelocity = 2000;
+    int stepVelocitySize = 1;
+    int stepVelocity = 20 * stepVelocitySize;
+    boolean shooting = false;
+
+    int direction = 1;
+    boolean relativeDrive = true;
+    boolean intakeActive = false;
+    boolean showControls = false;
+    boolean aLifting = false;
+    double timer = 0;
+
+    private Limelight3A limelight;
 
     @Override
     public void init() {
 
         //define DcMotors
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
-        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeft");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRight");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeft");
+        backRightDrive = hardwareMap.get(DcMotor.class, "BackRight");
         intake = hardwareMap.get(DcMotor.class, "Intake");
         belt = hardwareMap.get(DcMotor.class, "Belt");
 
         //define DcMotorExs
-        rShooter = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
-        lShooter = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
+        rShooter = hardwareMap.get(DcMotorEx.class, "RightShooter");
+        lShooter = hardwareMap.get(DcMotorEx.class, "LeftShooter");
 
         //define servos
         ballLift = hardwareMap.get(Servo.class, "BallLift");
         ballRamp = hardwareMap.get(Servo.class, "BallRamp");
+
+        //define very cool LED
+        led = hardwareMap.get(RevBlinkinLedDriver.class, "LED");
 
         //flips the direction of the necessary motors
         backRightDrive.setDirection(REVERSE);
@@ -93,30 +117,67 @@ public class MainRobotCode extends OpMode {
         //setting up the IMU
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.UP;
         RevHubOrientationOnRobot orientationOnRobot =
                 new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-        initAprilTag();
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
     }
 
-    int velocity = 1000;
-    int maxVelocity = 2000;
-    int stepVelocitySize = 1;
-    int stepVelocity = 20 * stepVelocitySize;
-    int direction = 1;
-    boolean shooting = false;
-    boolean relativeDrive = true;
-    boolean intakeActive = false;
-    boolean showControls = false;
-    boolean aLifting = false;
-    double timer = 0;
+    @Override
+    public void start(){
+        limelight.start();
+        limelight.pipelineSwitch(0);
+    }
+
+    // All units must match (inches recommended)
+    static final double CAMERA_HEIGHT_IN = 10;        // your robot
+    static final double TAG_HEIGHT_IN = 29.5;         // center of AprilTag
+    static final double CAMERA_PITCH_DEG = 22.5;      // Limelight tilt
+    double tx;
 
     @Override
     public void loop() {
+        // limelight
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        limelight.updateRobotOrientation(orientation.getYaw());
+
+        LLResult llResult = limelight.getLatestResult();
+
+        if (llResult != null && llResult.isValid()) {
+
+            telemetry.addData("Tx", llResult.getTx());
+            telemetry.addData("Ty", llResult.getTy());
+            telemetry.addData("Ta", llResult.getTa());
+            tx = llResult.getTx();
+
+            // -----------------------------
+            // DISTANCE TO APRILTAG (WORKING METHOD)
+            // -----------------------------
+            double ty = llResult.getTy();
+
+            double angleToTagDeg = CAMERA_PITCH_DEG + ty;
+            double angleToTagRad = Math.toRadians(angleToTagDeg);
+
+            double distanceInches =
+                    (TAG_HEIGHT_IN - CAMERA_HEIGHT_IN)
+                            / Math.tan(angleToTagRad);
+
+            telemetry.addLine("Dist to AprilTag (in): " + distanceInches);
+            telemetry.addLine("");
+
+            recVelocity = (maxVelocity/100d) * calcRecVelocityPct(distanceInches);
+            telemetry.addLine("Recommended power in order to score is: " + recVelocity / stepVelocity + "%");
+
+            telemetry.addLine("");
+        }
+
+        telemetry.addLine("");
+
+
         //add telemetry
         if (showControls) {
             telemetry.addLine("Controls:");
@@ -144,31 +205,32 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("");
         telemetry.addLine("");
 
-
-        detectTags();
-        recVelocity = (maxVelocity/100d) * calcRecVelocityPct(getDistToTower());
-
         telemetry.addLine("Correct order of balls: " + ballOrder);
         telemetry.addLine("");
         telemetry.addLine("Distance to the " + (redTeam? "red" : "blue") + " tower: " + (int) getDistToTower());
         telemetry.addLine("");
-        telemetry.addLine("Recommended power in order to score is: " + recVelocity / stepVelocity + "%");
-        telemetry.addLine("");
-        telemetry.addLine("Angle to tower is: " + getAngleToTower());
+        telemetry.addLine("Angle to tower is: " + tx);
 
 
         gp.readButtons();
 
 
-        //reset robot Yaw
-        if (gp.dpadDownPressed){
-            imu.resetYaw();
+        //LEDs
+        if (canSeeTower){
+            if (pointingToTower){
+                led.setPattern(COLOR_WAVES_FOREST_PALETTE);
+            } else {
+                led.setPattern(GREEN);
+            }
+        } else {
+            if (redTeam) led.setPattern(RED);
+            else led.setPattern(BLUE);
         }
 
 
-        //show or hide controls
-        if (gp.dpadLeftPressed){
-            showControls = !showControls;
+        //reset robot Yaw
+        if (gp.dpadDownPressed){
+            imu.resetYaw();
         }
 
 
@@ -196,15 +258,15 @@ public class MainRobotCode extends OpMode {
             velocity = Math.min(velocity + stepVelocity, maxVelocity);
         }
         if (gp.leftTriggerPressed){
-            autoShooting = !autoShooting;
+            pointToTower();
+            pointingToTower = true;
+        } else {
+            pointingToTower = false;
         }
         if (gp.yPressed){
             shooting = !shooting;
         }
-        if (autoShooting){
-            velocity = (int) Math.round(recVelocity);
-            pointToTower();
-        }
+        velocity = recVelocity;
         if (shooting){
             rShooter.setVelocity(velocity);
             lShooter.setVelocity(velocity);
@@ -234,14 +296,15 @@ public class MainRobotCode extends OpMode {
         }
 
         if (gp.x){
-            ballRamp.setPosition(0.3);
+            ballRamp.setPosition(0.13);
         } else {
             ballRamp.setPosition(0);
         }
 
+
+        cycles++;
         telemetry.addLine("");
-        telemetry.addLine("servoLifting is " + aLifting);
-        telemetry.addLine("lift servo is at " + ballLift.getPosition());
+        telemetry.addLine("cycle count is at " + cycles);
 
 
         //driving
@@ -317,15 +380,8 @@ public class MainRobotCode extends OpMode {
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
         // Set the webcam
-        if (hardwareMap.get(WebcamName.class, "Webcam 1") != null) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        }
-        else if (hardwareMap.get(WebcamName.class, "Ethernet Device") != null) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Ethernet Device"));
-        }
-        else {
-            throw new IllegalArgumentException("Camera Not Working");
-        }
+        CameraName limeLight = hardwareMap.get(WebcamName.class, "limelight");
+        builder.setCamera(limeLight);
 
         // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
         builder.enableLiveView(true);
@@ -368,13 +424,18 @@ public class MainRobotCode extends OpMode {
 
     private void detectTags() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        canSeeTower = false;
         for (AprilTagDetection tag : currentDetections) {
             if (tag.id == 20) {
                 distToBlueTower = tag.ftcPose.range;
                 angleToBlueTower = tag.ftcPose.bearing;
+                if (!redTeam)
+                    canSeeTower = true;
             } else if (tag.id == 24) {
                 distToRedTower = tag.ftcPose.range;
                 angleToRedTower = tag.ftcPose.bearing;
+                if (redTeam)
+                    canSeeTower = true;
             } else if (tag.id == 21) {
                 ballOrder = "GPP";
             } else if (tag.id == 22) {
@@ -389,7 +450,6 @@ public class MainRobotCode extends OpMode {
         double ret;
 
         //new
-        //y=0.20847x+34.25142
         ret = 0.20847 * distance + 34.25142;
 
         //old
@@ -417,7 +477,7 @@ public class MainRobotCode extends OpMode {
     }
 
     private void pointToTower(){
-        double angle = getAngleToTower();
+        double angle = tx;
         double power = Math.min(Math.abs(angle)/40, 0.5);
 
         if (angle < -1){
