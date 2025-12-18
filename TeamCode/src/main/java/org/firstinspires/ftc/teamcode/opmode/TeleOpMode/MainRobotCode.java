@@ -216,6 +216,7 @@ public class MainRobotCode extends OpMode {
 
 
         //LEDs
+        /*
         if (canSeeTower){
             if (pointingToTower){
                 led.setPattern(COLOR_WAVES_FOREST_PALETTE);
@@ -226,6 +227,8 @@ public class MainRobotCode extends OpMode {
             if (redTeam) led.setPattern(RED);
             else led.setPattern(BLUE);
         }
+        */
+
 
 
         //reset robot Yaw
