@@ -40,10 +40,6 @@ public class Red_Auto extends LinearOpMode{
     double adjustableInches = 24;
     double adjustableDegrees = 90;
 
-    private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
-    boolean cameraWorking = false;
-
     IMU imu;
 
     boolean onRedTeam = true;
@@ -58,9 +54,6 @@ public class Red_Auto extends LinearOpMode{
 
         //init IMU
         initIMU();
-
-        //init camera
-        initCamera();
 
         //initialize the gamepad
         if (wgp == null){
@@ -108,8 +101,6 @@ public class Red_Auto extends LinearOpMode{
             telemetry.addLine("counts per inch is: " + adjustableInches);
             telemetry.addLine("counts per degree is: " + adjustableDegrees);
             telemetry.addLine("");
-            if (cameraWorking) telemetry.addLine("CAMERA ONLINE");
-            telemetry.addLine("");
             if (imu.getRobotYawPitchRollAngles() != null) telemetry.addLine("IMU ONLINE");
             telemetry.update();
         }
@@ -127,11 +118,16 @@ public class Red_Auto extends LinearOpMode{
 
         Wait(500);
 
-        drive("backward", 0.8, 87);
+        drive("backward", 0.8, 93);
 
-        Wait(2500);
+        Wait(2000);
 
-        readTeam();
+        frontLeftDrive.setPower(0.5);
+        frontRightDrive.setPower(0.5);
+        backRightDrive.setPower(0.5);
+        backLeftDrive.setPower(0.5);
+
+        Wait(1000);
 
         unloadBalls(0.49);
 
@@ -139,19 +135,19 @@ public class Red_Auto extends LinearOpMode{
 
         Wait(750);
 
-        drive("forward", 0.5, 70);
+        drive("forward", 0.5, 72);
 
         spinIntake();
 
         Wait(2500);
 
-        drive("backward", 0.5, 70);
+        drive("backward", 0.5, 72);
 
         Wait(2500);
 
         stopIntake();
 
-        turn("left", 0.8, 57);
+        turn("left", 0.8, 60);
 
         Wait(750);
 
@@ -341,7 +337,6 @@ public class Red_Auto extends LinearOpMode{
 
     //shooting functions
     private void unloadBalls(double power){
-
         //spin up motor
         rightShooterMotor.setVelocity(2000 * power);
         leftShooterMotor.setVelocity(2000 * power);
@@ -380,11 +375,12 @@ public class Red_Auto extends LinearOpMode{
         leftShooterMotor.setPower(0);
 
     }
+    /*
     private void shootBalls(double power){
         pointToTower();
         unloadBalls(power);
     }
-
+    */
 
     //util functions
     private double getHeader(){
@@ -392,6 +388,7 @@ public class Red_Auto extends LinearOpMode{
         angle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         return angle;
     }
+    /*
     private void pointToTower(){
         while (true) {
             double angleToTower = getAngleToTower();
@@ -405,6 +402,7 @@ public class Red_Auto extends LinearOpMode{
             }
         }
     }
+    */
     private void resetHeading(){
         //resets the IMU yaw
         imu.resetYaw();
@@ -455,6 +453,7 @@ public class Red_Auto extends LinearOpMode{
 
 
     //camera functions
+    /*
     private void readTeam(){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection tag : currentDetections) {
@@ -502,6 +501,7 @@ public class Red_Auto extends LinearOpMode{
 
         return 0.129165 * dist + 39.56322;
     }
+    */
 
 
     //functions to make code look better
@@ -514,14 +514,14 @@ public class Red_Auto extends LinearOpMode{
     //init functions
     public void defineMotors(){
         //define DriveBase motors
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRightMotor");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeftMotor");
-        backRightDrive = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeft");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRight");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeft");
+        backRightDrive = hardwareMap.get(DcMotor.class, "BackRight");
 
         //defines Shooter motors
-        rightShooterMotor = hardwareMap.get(DcMotorEx.class, "RightShooterMotor");
-        leftShooterMotor = hardwareMap.get(DcMotorEx.class, "LeftShooterMotor");
+        rightShooterMotor = hardwareMap.get(DcMotorEx.class, "RightShooter");
+        leftShooterMotor = hardwareMap.get(DcMotorEx.class, "LeftShooter");
 
         //defines Ball Magazine Servos and motors
         intake = hardwareMap.get(DcMotor.class, "Intake");
@@ -542,31 +542,6 @@ public class Red_Auto extends LinearOpMode{
         //tells Shooter motors to run using encoder to me more accurate
         rightShooterMotor.setMode(RUN_USING_ENCODER);
         leftShooterMotor.setMode(RUN_USING_ENCODER);
-    }
-    private void initCamera() {
-
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder().build();
-
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the webcam
-        builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableLiveView(true);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-         visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        visionPortal.setProcessorEnabled(aprilTag, true);
-
-        cameraWorking = true;
     }
     public void initIMU(){
         imu = hardwareMap.get(IMU.class, "imu");
