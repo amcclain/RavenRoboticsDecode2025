@@ -26,12 +26,11 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-import java.lang.Math;
 import java.util.List;
 
 
-@TeleOp(name = "Red Main", group = "Robot")
-public class MainRobotCode extends OpMode {
+@TeleOp(name = "Blue Main", group = "Robot")
+public class MainRobotCodeBlue extends OpMode {
 
     //declares the motors and servos
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
@@ -46,7 +45,7 @@ public class MainRobotCode extends OpMode {
     //declares the Inertial Measurement Unit
     private IMU imu;
 
-    boolean redTeam = true;
+    boolean redTeam = false;
     boolean autoShooting = false;
 
     // Set from tag detection
@@ -135,7 +134,7 @@ public class MainRobotCode extends OpMode {
     @Override
     public void start(){
         limelight.start();
-        limelight.pipelineSwitch(0);
+        limelight.pipelineSwitch(1);
     }
 
     // All units must match (inches recommended)
@@ -176,6 +175,7 @@ public class MainRobotCode extends OpMode {
             telemetry.addLine("");
 
             recVelocity = (maxVelocity/100d) * calcRecVelocityPct(distanceInches);
+
             telemetry.addLine("Recommended power in order to score is: " + recVelocity / stepVelocity + "%");
             telemetry.addLine("");
 
