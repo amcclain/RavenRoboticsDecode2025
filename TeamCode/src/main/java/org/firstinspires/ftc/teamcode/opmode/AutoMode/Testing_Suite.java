@@ -23,7 +23,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 @Autonomous(name = "Testing Suit", group = "robot")
-public class Testing_Suit extends LinearOpMode{
+public class Testing_Suite extends LinearOpMode{
 
     //declare DriveBase motors
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
