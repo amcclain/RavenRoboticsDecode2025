@@ -147,7 +147,7 @@ public class Red_Auto extends LinearOpMode{
 
         stopIntake();
 
-        turn("left", 0.8, 60);
+        turn("left", 0.8, 58);
 
         Wait(750);
 

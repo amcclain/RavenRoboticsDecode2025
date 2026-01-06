@@ -141,7 +141,7 @@ public class Blue_Auto extends LinearOpMode{
 
         stopIntake();
 
-        turn("right", 0.8, 60);
+        turn("right", 0.8, 58);
 
         Wait(750);
 
