@@ -34,7 +34,8 @@ import java.util.List;
 public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
-    DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive, intake, belt;
+    DcMotorEx frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    DcMotorEx intake, belt;
     DcMotorEx rShooter, lShooter;
     Servo ballLift, ballRamp;
     RevBlinkinLedDriver led;
@@ -86,12 +87,12 @@ public class MainRobotCode extends OpMode {
     public void init() {
 
         //define DcMotors
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "FrontLeft");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "FrontRight");
-        backLeftDrive = hardwareMap.get(DcMotor.class, "BackLeft");
-        backRightDrive = hardwareMap.get(DcMotor.class, "BackRight");
-        intake = hardwareMap.get(DcMotor.class, "Intake");
-        belt = hardwareMap.get(DcMotor.class, "Belt");
+        frontLeftDrive = hardwareMap.get(DcMotorEx.class, "FrontLeft");
+        frontRightDrive = hardwareMap.get(DcMotorEx.class, "FrontRight");
+        backLeftDrive = hardwareMap.get(DcMotorEx.class, "BackLeft");
+        backRightDrive = hardwareMap.get(DcMotorEx.class, "BackRight");
+        intake = hardwareMap.get(DcMotorEx.class, "Intake");
+        belt = hardwareMap.get(DcMotorEx.class, "Belt");
 
         //define DcMotorExs
         rShooter = hardwareMap.get(DcMotorEx.class, "RightShooter");
@@ -186,8 +187,8 @@ public class MainRobotCode extends OpMode {
                 pointToTower(tx);
             }
 
-            if (tx < -3) pointingToTower = false;
-            else if (tx > 3) pointingToTower = false;
+            if (tx < -4) pointingToTower = false;
+            else if (tx > 4) pointingToTower = false;
             else pointingToTower = true;
         }
 
@@ -238,6 +239,7 @@ public class MainRobotCode extends OpMode {
             else
                 led.setPattern(BLUE);
         }
+
 
 
         //reset robot Yaw
@@ -302,6 +304,14 @@ public class MainRobotCode extends OpMode {
             ballLift.setPosition(0.06);
         }
 
+        if (gp.x){
+            ballRamp.setPosition(0.13);
+            belt.setVelocity(0.85*2000);
+            intake.setVelocity(0.4*2000);
+        } else {
+            ballRamp.setPosition(0.07);
+        }
+        /*
         if (gp.xPressed){
             aLifting = true;
             bLifting = true;
@@ -312,10 +322,10 @@ public class MainRobotCode extends OpMode {
         if (bLifting){
 
             ballRamp.setPosition(0.13);
-            belt.setPower(0.85);
+            belt.setVelocity(0.85*2000);
 
             if (timerB >= 20)
-                intake.setPower(0.4);
+                intake.setVelocity(0.4*2000);
 
             if (timerB >= 180)
                 bLifting = false;
@@ -324,6 +334,7 @@ public class MainRobotCode extends OpMode {
         } else {
             ballRamp.setPosition(0.07);
         }
+        */
 
 
         cycles++;
@@ -387,10 +398,10 @@ public class MainRobotCode extends OpMode {
         // We multiply by maxSpeed so that it can be set lower for outreaches
         // When a young child is driving the robot, we may not want to allow full
         // speed.
-        frontLeftDrive.setPower(maxSpeed * (frontLeftPower / maxPower));
-        frontRightDrive.setPower(maxSpeed * (frontRightPower / maxPower));
-        backLeftDrive.setPower(maxSpeed * (backLeftPower / maxPower));
-        backRightDrive.setPower(maxSpeed * (backRightPower / maxPower));
+        frontLeftDrive.setVelocity((maxSpeed * (frontLeftPower / maxPower))*2000);
+        frontRightDrive.setVelocity((maxSpeed * (frontRightPower / maxPower))*2000);
+        backLeftDrive.setVelocity((maxSpeed * (backLeftPower / maxPower))*2000);
+        backRightDrive.setVelocity((maxSpeed * (backRightPower / maxPower))*2000);
     }
 
     private void initAprilTag() {
