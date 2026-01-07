@@ -13,7 +13,6 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -27,12 +26,11 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
-import java.lang.Math;
 import java.util.List;
 
 
-@TeleOp(name = "Red Main", group = "Robot")
-public class MainRobotCode extends OpMode {
+@TeleOp(name = "Speed Graph", group = "Robot")
+public class SpeedGraph extends OpMode {
 
     //declares the motors and servos
     DcMotorEx frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
@@ -281,7 +279,7 @@ public class MainRobotCode extends OpMode {
             shooting = !shooting;
         }
         if (canSeeTower) {
-            velocity = recVelocity;
+            //velocity = recVelocity;
         }
         if (shooting){
             rShooter.setVelocity(velocity);
