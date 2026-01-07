@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.TeleOpMode;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.BLUE;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.GREEN;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.RED;
+import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.YELLOW;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
@@ -154,7 +155,8 @@ public class MainRobotCode extends OpMode {
 
         if (llResult != null && llResult.isValid()) {
 
-            canSeeTower = true;
+            if (limelight.getTimeSinceLastUpdate() < 10)
+                canSeeTower = true;
 
             telemetry.addData("Tx", llResult.getTx());
             telemetry.addData("Ty", llResult.getTy());
@@ -201,7 +203,7 @@ public class MainRobotCode extends OpMode {
             telemetry.addLine("Up D-Pad toggles between robot and field relative");
             telemetry.addLine("Triangle spins shooter motors");
             telemetry.addLine("Circle launches top ball");
-            telemetry.addLine("Square launches middle ball");
+            telemetry.addLine("Square launches all balls");
             telemetry.addLine("X activates intake");
             telemetry.addLine("Left joystick moves robot");
             telemetry.addLine("Right joystick turns the robot");
@@ -219,8 +221,9 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("");
         telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
         telemetry.addLine("");
+        telemetry.addLine("ticks motors have turned:");
+        telemetry.addLine("FL: " + frontLeftDrive.getCurrentPosition() + "FR: " + frontRightDrive.getCurrentPosition() + "BL: " + backLeftDrive.getCurrentPosition() + "BR: " + backRightDrive.getCurrentPosition());
         telemetry.addLine("");
-
         telemetry.addLine("Correct order of balls: " + ballOrder);
         telemetry.addLine("");
         telemetry.addLine("Distance to the " + (redTeam? "red" : "blue") + " tower: " + (int) getDistToTower());
@@ -231,8 +234,11 @@ public class MainRobotCode extends OpMode {
 
 
         //LEDs
-        if (pointingToTower)
-            led.setPattern(GREEN);
+        if (canSeeTower)
+            if (gp.leftTrigger && pointingToTower)
+                led.setPattern(GREEN);
+            else
+                led.setPattern(YELLOW);
         else {
             if (redTeam)
                 led.setPattern(RED);
@@ -296,7 +302,7 @@ public class MainRobotCode extends OpMode {
 
             ballLift.setPosition(0.3);
 
-            if (timerA >= 20 && !gp.b)
+            if (timerA >= 10 && !gp.b)
                 aLifting = false;
 
             timerA++;
@@ -487,8 +493,8 @@ public class MainRobotCode extends OpMode {
         //new
         ret = 0.20847 * distance + 34.25142;
 
-        //old
-        //ret = 0.164681 * distance + 37.09811;
+        //arbitrary add 2
+        ret += 2;
 
         //make sure power is between 0% and 100%
         ret = Math.max(ret, 0);
