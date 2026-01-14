@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.Concepts;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 import java.util.ArrayList;
 import java.util.List;
 
+@Disabled
 @TeleOp(name = "LEDs", group = "Robot")
 public class ConceptBlinkinLEDs extends OpMode {
 
