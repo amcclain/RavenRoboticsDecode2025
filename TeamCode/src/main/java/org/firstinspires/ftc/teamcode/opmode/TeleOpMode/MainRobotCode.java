@@ -13,7 +13,6 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -155,8 +154,9 @@ public class MainRobotCode extends OpMode {
 
         if (llResult != null && llResult.isValid()) {
 
-            if (limelight.getTimeSinceLastUpdate() < 10)
+            if (llResult.getStaleness() < 50)
                 canSeeTower = true;
+            else canSeeTower = false;
 
             telemetry.addData("Tx", llResult.getTx());
             telemetry.addData("Ty", llResult.getTy());
@@ -222,7 +222,7 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
         telemetry.addLine("");
         telemetry.addLine("ticks motors have turned:");
-        telemetry.addLine("FL: " + frontLeftDrive.getCurrentPosition() + "FR: " + frontRightDrive.getCurrentPosition() + "BL: " + backLeftDrive.getCurrentPosition() + "BR: " + backRightDrive.getCurrentPosition());
+        telemetry.addLine("FL: " + frontLeftDrive.getVelocity() + "FR: " + frontRightDrive.getVelocity() + "BL: " + backLeftDrive.getVelocity() + "BR: " + backRightDrive.getVelocity());
         telemetry.addLine("");
         telemetry.addLine("Correct order of balls: " + ballOrder);
         telemetry.addLine("");
@@ -262,11 +262,11 @@ public class MainRobotCode extends OpMode {
             direction = -direction;
         }
         if (intakeActive) {
-            intake.setPower(direction);
-            belt.setPower(direction*0.8);
+            intake.setVelocity(direction*2000);
+            belt.setVelocity(direction*2000);
         } else {
-            intake.setPower(0);
-            belt.setPower(0.7);
+            intake.setVelocity(0*2000);
+            belt.setVelocity(0.7*2000);
         }
 
 
