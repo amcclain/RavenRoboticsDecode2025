@@ -37,6 +37,7 @@ public class ThreeBall extends OpMode {
     DcMotorEx intake, belt;
     DcMotorEx rShooter, lShooter;
     Servo ballLift, ballRamp;
+    Servo leftLift, rightLift, middleLift;
     RevBlinkinLedDriver led;
     WaverlyGamepad gp = null;
 
@@ -101,6 +102,9 @@ public class ThreeBall extends OpMode {
         //define servos
         ballLift = hardwareMap.get(Servo.class, "BallLift");
         ballRamp = hardwareMap.get(Servo.class, "BallRamp");
+        leftLift = hardwareMap.get(Servo.class, "LeftLift");
+        rightLift = hardwareMap.get(Servo.class, "RightLift");
+        middleLift = hardwareMap.get(Servo.class, "MiddleLift");
 
         //define very cool LED
         led = hardwareMap.get(RevBlinkinLedDriver.class, "LED");
@@ -109,6 +113,7 @@ public class ThreeBall extends OpMode {
         backRightDrive.setDirection(REVERSE);
         backLeftDrive.setDirection(REVERSE);
         rShooter.setDirection(REVERSE);
+        rightLift.setDirection(Servo.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(RUN_USING_ENCODER);
@@ -230,6 +235,18 @@ public class ThreeBall extends OpMode {
 
 
         gp.readButtons();
+
+        //lift
+        if (gp.dpadLeft) {
+            leftLift.setPosition(1);
+            rightLift.setPosition(1);
+            middleLift.setPosition(1);
+        }
+        else {
+            leftLift.setPosition(0);
+            rightLift.setPosition(0);
+            middleLift.setPosition(0);
+        }
 
 
         //LEDs
