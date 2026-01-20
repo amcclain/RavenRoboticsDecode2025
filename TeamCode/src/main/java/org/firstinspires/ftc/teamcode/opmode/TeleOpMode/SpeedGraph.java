@@ -260,11 +260,11 @@ public class SpeedGraph extends OpMode {
             direction = -direction;
         }
         if (intakeActive) {
-            intake.setPower(direction);
-            belt.setPower(direction*0.8);
+            intake.setVelocity(direction);
+            belt.setVelocity(direction*0.8);
         } else {
-            intake.setPower(0);
-            belt.setPower(0.7);
+            intake.setVelocity(0*2000);
+            belt.setVelocity(0.7*2000);
         }
 
 
