@@ -266,22 +266,19 @@ public class MainRobotCode extends OpMode {
             belt.setVelocity(direction*2000);
         } else {
             intake.setVelocity(0*2000);
-            belt.setVelocity(0.7*2000);
+            belt.setVelocity(0.5*2000);
         }
 
 
         //shooting
-        if (gp.leftBumperPressed){
-            velocity = Math.max(velocity - stepVelocity, 0);
-        }
-        if (gp.rightBumperPressed){
-            velocity = Math.min(velocity + stepVelocity, maxVelocity);
-        }
         if (gp.yPressed){
             shooting = !shooting;
         }
         if (canSeeTower) {
             velocity = recVelocity;
+            if (gp.x){
+                velocity -= 20;
+            }
         }
         if (shooting){
             rShooter.setVelocity(velocity);
@@ -312,8 +309,8 @@ public class MainRobotCode extends OpMode {
 
         if (gp.x){
             ballRamp.setPosition(0.13);
-            belt.setVelocity(0.85*2000);
-            intake.setVelocity(0.4*2000);
+            belt.setVelocity(0.75*2000);
+            intake.setVelocity(0.5*2000);
         } else {
             ballRamp.setPosition(0.07);
         }
@@ -491,10 +488,13 @@ public class MainRobotCode extends OpMode {
         double ret;
 
         //new
-        ret = 0.20847 * distance + 34.25142;
+        //ret = 0.20847 * distance + 34.25142;
+
+        //new
+        ret = 0.260102 * distance + 34.80803;
 
         //arbitrary add 2
-        ret += 2;
+        //ret += 2;
 
         //make sure power is between 0% and 100%
         ret = Math.max(ret, 0);
