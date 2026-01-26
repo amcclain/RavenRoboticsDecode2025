@@ -5,6 +5,7 @@ import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.GREEN
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.RED;
 import static com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern.YELLOW;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -118,6 +119,14 @@ public class MainRobotCode extends OpMode {
         rShooter.setMode(RUN_USING_ENCODER);
         lShooter.setMode(RUN_USING_ENCODER);
 
+        //reset the encoders
+        frontLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(STOP_AND_RESET_ENCODER);
+        rShooter.setMode(STOP_AND_RESET_ENCODER);
+        lShooter.setMode(STOP_AND_RESET_ENCODER);
+
         gp = new WaverlyGamepad(gamepad1);
 
         //setting up the IMU
@@ -222,7 +231,7 @@ public class MainRobotCode extends OpMode {
         telemetry.addLine("Press Left Dpad to show " + (showControls? "Robot Info" : "Robot Controls"));
         telemetry.addLine("");
         telemetry.addLine("ticks motors have turned:");
-        telemetry.addLine("FL: " + frontLeftDrive.getVelocity() + "FR: " + frontRightDrive.getVelocity() + "BL: " + backLeftDrive.getVelocity() + "BR: " + backRightDrive.getVelocity());
+        telemetry.addLine("FL: " + frontLeftDrive.getCurrentPosition() + "FR: " + frontRightDrive.getCurrentPosition() + "BL: " + backLeftDrive.getCurrentPosition() + "BR: " + backRightDrive.getCurrentPosition());
         telemetry.addLine("");
         telemetry.addLine("Correct order of balls: " + ballOrder);
         telemetry.addLine("");

@@ -13,6 +13,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -37,7 +38,7 @@ public class ThreeBall extends OpMode {
     DcMotorEx intake, belt;
     DcMotorEx rShooter, lShooter;
     Servo ballLift, ballRamp;
-    Servo leftLift, rightLift, middleLift;
+    CRServo leftLift, rightLift, middleLift;
     RevBlinkinLedDriver led;
     WaverlyGamepad gp = null;
 
@@ -102,9 +103,9 @@ public class ThreeBall extends OpMode {
         //define servos
         ballLift = hardwareMap.get(Servo.class, "BallLift");
         ballRamp = hardwareMap.get(Servo.class, "BallRamp");
-        leftLift = hardwareMap.get(Servo.class, "LeftLift");
-        rightLift = hardwareMap.get(Servo.class, "RightLift");
-        middleLift = hardwareMap.get(Servo.class, "MiddleLift");
+        leftLift = hardwareMap.get(CRServo.class, "LeftLift");
+        rightLift = hardwareMap.get(CRServo.class, "RightLift");
+        middleLift = hardwareMap.get(CRServo.class, "MiddleLift");
 
         //define very cool LED
         led = hardwareMap.get(RevBlinkinLedDriver.class, "LED");
@@ -113,7 +114,8 @@ public class ThreeBall extends OpMode {
         backRightDrive.setDirection(REVERSE);
         backLeftDrive.setDirection(REVERSE);
         rShooter.setDirection(REVERSE);
-        rightLift.setDirection(Servo.Direction.REVERSE);
+        //leftLift.setDirection(CRServo.Direction.REVERSE);
+        middleLift.setDirection(CRServo.Direction.REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(RUN_USING_ENCODER);
@@ -238,14 +240,19 @@ public class ThreeBall extends OpMode {
 
         //lift
         if (gp.dpadLeft) {
-            leftLift.setPosition(1);
-            rightLift.setPosition(1);
-            middleLift.setPosition(1);
+            leftLift.setPower(1);
+            rightLift.setPower(1);
+            middleLift.setPower(1);
+        }
+        else if (gp.dpadRight){
+            leftLift.setPower(-1);
+            rightLift.setPower(-1);
+            middleLift.setPower(-1);
         }
         else {
-            leftLift.setPosition(0);
-            rightLift.setPosition(0);
-            middleLift.setPosition(0);
+            leftLift.setPower(0);
+            rightLift.setPower(0);
+            middleLift.setPower(0);
         }
 
 
@@ -326,12 +333,8 @@ public class ThreeBall extends OpMode {
             ballLift.setPosition(0.06);
         }
 
-        if (gp.xPressed){
-            bLifting = !bLifting;
-        }
-
-        if (bLifting){
-            intake.setVelocity(0.3*2000);
+        if (gp.x){
+            intake.setVelocity(0.6*2000);
             ballRamp.setPosition(0.07+0.05);
         } else {
             ballRamp.setPosition(0.07);
