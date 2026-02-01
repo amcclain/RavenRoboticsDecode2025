@@ -22,7 +22,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "Red Auto", group = "robot")
+@Autonomous(name = "Red Close", group = "robot")
 public class Red_Auto extends LinearOpMode{
 
     //declare DriveBase motors
@@ -375,6 +375,7 @@ public class Red_Auto extends LinearOpMode{
         leftShooterMotor.setPower(0);
 
     }
+
     /*
     private void shootBalls(double power){
         pointToTower();
@@ -388,6 +389,7 @@ public class Red_Auto extends LinearOpMode{
         angle = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
         return angle;
     }
+
     /*
     private void pointToTower(){
         while (true) {

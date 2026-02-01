@@ -12,6 +12,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -32,6 +33,7 @@ import java.util.List;
 
 
 @TeleOp(name = "Red Main", group = "Robot")
+@Disabled
 public class MainRobotCode extends OpMode {
 
     //declares the motors and servos
@@ -317,9 +319,9 @@ public class MainRobotCode extends OpMode {
         }
 
         if (gp.x){
-            ballRamp.setPosition(0.13);
+            ballRamp.setPosition(0.07+0.06);
             belt.setVelocity(0.75*2000);
-            intake.setVelocity(0.5*2000);
+            intake.setVelocity(0.6*2000);
         } else {
             ballRamp.setPosition(0.07);
         }

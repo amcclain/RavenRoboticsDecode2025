@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 public class RavensAutonomous extends OpMode {
 
     // Settings
-    double COUNTS_PER_INCH = 29.8;
-    int targetInches = 96;
+    double COUNTS_PER_INCH = 41;
+    int targetInches = 24;
     double power = 0.5;
     String dir = "back";
 
@@ -35,14 +35,13 @@ public class RavensAutonomous extends OpMode {
         gp1 = new WaverlyGamepad(gamepad1);
 
 
-        fl = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
-        fr = hardwareMap.get(DcMotor.class, "FrontRightMotor");
-        bl = hardwareMap.get(DcMotor.class, "BackLeftMotor");
-        br = hardwareMap.get(DcMotor.class, "BackRightMotor");
+        fl = hardwareMap.get(DcMotor.class, "FrontLeft");
+        fr = hardwareMap.get(DcMotor.class, "FrontRight");
+        bl = hardwareMap.get(DcMotor.class, "BackLeft");
+        br = hardwareMap.get(DcMotor.class, "BackRight");
 
         bl.setDirection(REVERSE);
-        fl.setDirection(REVERSE);
-        fr.setDirection(REVERSE);
+        br.setDirection(REVERSE);
 
         fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

@@ -27,10 +27,11 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-@TeleOp(name = "3 Ball", group = "Robot")
+@TeleOp(name = "3 Ball Red", group = "Robot")
 public class ThreeBall extends OpMode {
 
     //declares the motors and servos
@@ -85,6 +86,8 @@ public class ThreeBall extends OpMode {
 
     private Limelight3A limelight;
 
+    List<Double> velos = new ArrayList<>();
+
     @Override
     public void init() {
 
@@ -101,7 +104,7 @@ public class ThreeBall extends OpMode {
         lShooter = hardwareMap.get(DcMotorEx.class, "LeftShooter");
 
         //define servos
-        ballLift = hardwareMap.get(Servo.class, "BallLift");
+        ballLift = hardwareMap.get(Servo.class,"BallLift");
         ballRamp = hardwareMap.get(Servo.class, "BallRamp");
         leftLift = hardwareMap.get(CRServo.class, "LeftLift");
         rightLift = hardwareMap.get(CRServo.class, "RightLift");
@@ -114,8 +117,10 @@ public class ThreeBall extends OpMode {
         backRightDrive.setDirection(REVERSE);
         backLeftDrive.setDirection(REVERSE);
         rShooter.setDirection(REVERSE);
-        //leftLift.setDirection(CRServo.Direction.REVERSE);
-        middleLift.setDirection(CRServo.Direction.REVERSE);
+
+        //flips the direction of the necessary servos
+        leftLift.setDirection(REVERSE);
+        middleLift.setDirection(REVERSE);
 
         //tells motors to use RUN_USING_ENCODER to be more accurate
         frontLeftDrive.setMode(RUN_USING_ENCODER);
@@ -138,10 +143,6 @@ public class ThreeBall extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-    }
-
-    @Override
-    public void start(){
         limelight.start();
         limelight.pipelineSwitch(0);
     }
@@ -159,10 +160,11 @@ public class ThreeBall extends OpMode {
 
         LLResult llResult = limelight.getLatestResult();
 
+        canSeeTower = false;
+
         if (llResult != null && llResult.isValid()) {
 
-            if (llResult.getStaleness() < 100)
-                canSeeTower = true;
+            canSeeTower = true;
 
             telemetry.addData("Tx", llResult.getTx());
             telemetry.addData("Ty", llResult.getTy());
@@ -195,9 +197,8 @@ public class ThreeBall extends OpMode {
                 pointToTower(tx);
             }
 
-            if (tx < -4) pointingToTower = false;
-            else if (tx > 4) pointingToTower = false;
-            else pointingToTower = true;
+            if (Math.abs(tx) < 4) pointingToTower = true;
+            else pointingToTower = false;
         }
 
 
@@ -289,7 +290,7 @@ public class ThreeBall extends OpMode {
             belt.setVelocity(direction*2000);
         } else {
             intake.setVelocity(0*2000);
-            belt.setVelocity(0.45*2000);
+            belt.setVelocity(0.3*2000);
         }
 
 
@@ -307,6 +308,7 @@ public class ThreeBall extends OpMode {
             velocity = recVelocity;
         }
         if (shooting){
+            velos.add((rShooter.getVelocity() + lShooter.getVelocity())/2);
             rShooter.setVelocity(velocity);
             lShooter.setVelocity(velocity);
         } else {
@@ -334,8 +336,9 @@ public class ThreeBall extends OpMode {
         }
 
         if (gp.x){
-            intake.setVelocity(0.6*2000);
-            ballRamp.setPosition(0.07+0.05);
+            belt.setVelocity(0.9*2000);
+            intake.setVelocity(1*2000);
+            ballRamp.setPosition(0.07+0.07);
         } else {
             ballRamp.setPosition(0.07);
         }
@@ -380,6 +383,13 @@ public class ThreeBall extends OpMode {
             driveFieldRelative(gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x);
         }
 
+        telemetry.addLine("");
+        telemetry.addLine("");
+
+        for (int i = 0; i < velos.size(); i++) {
+            telemetry.addLine(i + " tick, " + velos.get(i) + " wheel speed.");
+        }
+
         telemetry.update();
 
     }
@@ -405,31 +415,30 @@ public class ThreeBall extends OpMode {
 
     //traditional drive
     public void drive(double forward, double right, double rotate) {
-        // This calculates the power needed for each wheel based on the amount of forward,
-        // strafe right, and rotate
-        double frontLeftPower = forward + right + rotate;
-        double frontRightPower = forward - right - rotate;
-        double backRightPower = forward + right - rotate;
-        double backLeftPower = forward - right + rotate;
 
         double maxPower = 1.0;
-        double maxSpeed = 1.0;  // make this slower for outreaches
 
-        // This is needed to make sure we don't pass > 1.0 to any wheel
-        // It allows us to keep all of the motors in proportion to what they should
-        // be and not get clipped
+        double minSpeed = 0.2;
+
+        double frontLeftPower = (forward + right + rotate);
+        double frontRightPower = (forward - right - rotate);
+        double backRightPower = (forward + right - rotate);
+        double backLeftPower = (forward - right + rotate);
+
+        if (frontLeftPower != 0) frontLeftPower += minSpeed;
+        if (frontRightPower != 0) frontRightPower += minSpeed;
+        if (backRightPower != 0) backRightPower += minSpeed;
+        if (backLeftPower != 0) backLeftPower += minSpeed;
+
         maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
         maxPower = Math.max(maxPower, Math.abs(frontRightPower));
         maxPower = Math.max(maxPower, Math.abs(backRightPower));
         maxPower = Math.max(maxPower, Math.abs(backLeftPower));
 
-        // We multiply by maxSpeed so that it can be set lower for outreaches
-        // When a young child is driving the robot, we may not want to allow full
-        // speed.
-        frontLeftDrive.setVelocity((maxSpeed * (frontLeftPower / maxPower))*2000);
-        frontRightDrive.setVelocity((maxSpeed * (frontRightPower / maxPower))*2000);
-        backLeftDrive.setVelocity((maxSpeed * (backLeftPower / maxPower))*2000);
-        backRightDrive.setVelocity((maxSpeed * (backRightPower / maxPower))*2000);
+        frontLeftDrive.setVelocity((frontLeftPower / maxPower)*2000);
+        frontRightDrive.setVelocity((frontRightPower / maxPower)*2000);
+        backLeftDrive.setVelocity((backLeftPower / maxPower)*2000);
+        backRightDrive.setVelocity((backRightPower / maxPower)*2000);
     }
 
     private void initAprilTag() {
