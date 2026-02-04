@@ -7,6 +7,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -22,7 +23,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
-@Autonomous(name = "Red Close", group = "robot")
+@Autonomous(name = "Red Close (OLD)", group = "robot")
+@Disabled  // Replaced by RedCloseAuto - delete after testing new code
 public class Red_Auto extends LinearOpMode{
 
     //declare DriveBase motors
