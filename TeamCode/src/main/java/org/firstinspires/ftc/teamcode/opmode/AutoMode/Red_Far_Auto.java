@@ -7,6 +7,7 @@ import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,7 +17,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.WaverlyGamepad;
 
-@Autonomous(name = "Red Far", group = "robot")
+@Autonomous(name = "Red Far (OLD)", group = "robot")
+@Disabled  // Replaced by RedFarAuto - delete after testing new code
 public class Red_Far_Auto extends LinearOpMode{
 
     //declare DriveBase motors
